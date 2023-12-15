@@ -1,0 +1,84 @@
+<html>
+<head>
+    <title>WebGL Path Tracing</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <!-- Use Chrome Frame in IE -->
+    <style>
+        body{ background: #000; color: #ccc; font-size:14px; font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;}
+		h1{color:white;}
+		a{color:white;}
+        #title{text-align: center; height:92px;}
+        #convasContainer{float: left;}
+        #canvas{border: none;}
+        #message{margin-top:5px; text-align: center;}
+        #controller{ position:absolute; right: 0px; top: 100px; vertical-align:middle;}
+		#icon{width:24px; height:24px; float:left; background:url("right-arrow.png"); cursor:pointer;}
+        .buttons{line-height:25px; background:#dad5cb; border:0; padding:0;}
+        input[type="button"]{margin-left:5px; margin-top:1px; border:1px solid transparent; border-radius:2px; font-size:11px; line-height:7px; background:#c5bdad; color:black; padding:4px 4px 5px 4px; cursor:pointer; display:inline-block; text-shadow: 0 1px 0 #b0a58f; box-shadow:0 -1px 0 #b0a58f;}
+        input[type="button"]:hover{background:#c5bdad;}
+        #gui-right, #gui-left{ width:200px; float:left; margin-left:5px;}
+		#info{float:left; padding:0 10px; width:220px; line-height:1.3; font-size:14px;}
+		#info h3{margin:12px 0 0 0;font-size:15px; color:white;}
+		#time{position:absolute; top:0px; left:10px;}
+    </style>
+</head>
+<body>
+    <div id="title">
+        <h1>WebGL Path Tracing</h1>
+		Made by <a href="https://www.linkedin.com/pub/bo-zhang/7b/767/815" target="_blank">Bo Zhang</a> and <a href="https://www.linkedin.com/in/liying3" target="_blank">Ying Li</a>
+    </div>
+    <div id="convasContainer">
+        <canvas id="canvas" width="512" height="512" tabindex="1"></canvas>
+        <div id="message"></div>
+        <!-- Pixel offset to avoid FPS counter -->
+    </div>
+    <div id="controller">
+		<div id="icon" onclick="toggleContorller();"></div>
+        <div id = "gui-left">
+            <div class="buttons">
+                <input type="button" value="Add Cube" onclick="addCube();" />
+                <input type="button" value="Add Sphere" onclick="addSphere();" />
+            </div>
+        </div>
+        <div id = "gui-right">
+            <div class="buttons">
+                <input type="button" value="Default Scene" onclick="defaultScene();" />
+		        <input type="button" value="Resize" onclick="resize();" />
+            </div>
+        </div>
+		<div id ="info">
+			Path tracing is a method of rendering images faithful to reality. The core algorithm of this WebGL Path Tracer is implemented in GLSL fragment shader. Each ray bounces in the scene around five times.<br/><br/>A <a href="https://www.youtube.com/watch?v=Hm6VyPIbKP0&feature=youtu.be" target="_blank">Demo</a> is uploaded in YouTube and code is provided in <a href="https://github.com/wulinjiansheng/WebGL_PathTracer" target="_blank">GitHub</a>.
+			<h3>Features:</h3>
+			<ul>
+				<li>Diffuse and Blinn-Phong</li>
+				<li>Fresnel Reflection and Refraction</li>
+				<li>Subsurface Scattering</li>
+				<li>Super Sampling Anti-aliasing</li>
+				<li>Intersection</li>
+			</ul>
+			<h3>Interaction:</h3>
+			<ul>
+				<li>Space: pause toggle</li>
+				<li>Left button: rotate scene</li>
+				<li>Middle button: translate scene</li>
+				<li>Right button: zoom in/ out</li>
+				<li>Control panel: add objects and change attributes</li>
+			</ul>
+		</div>
+	</div>
+	<div id = "time"></div>
+    <script src="js/lib/gl-matrix.js" type="text/javascript"></script>
+    <script src="js/lib/stats.min.js" type="text/javascript"></script>
+    <script src="js/lib/dat.gui.min.js" type="text/javascript"></script>
+    <script src="js/lib/webGL_Utility.js" type="text/javascript"></script>
+
+	
+	<script src="js/utils.js" type="text/javascript"></script>
+	<script src="js/gui.js" type="text/javascript"></script>
+	<script src="js/interact.js" type="text/javascript"></script>
+	<script src="js/object.js" type="text/javascript"></script>
+	<script src="js/render.js" type="text/javascript"></script>
+    <script src="js/run.js" type="text/javascript"></script>
+</body>
+</html>
