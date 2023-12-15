@@ -1,4 +1,38 @@
 ///////////////////////////////////////////////////////////////////////////
+var gl;
+
+//pt shader
+var shaderProgram;
+
+//Texture
+var textures;
+var objattrtex;
+
+//Vertex Shader
+var VertexLocation;
+var u_veyeLocation;
+var u_vInvMPLocation;
+
+//Fragment Shader
+var u_numsLocation;
+var u_eyeLocation;
+var u_timeLocation;
+var u_itrLocation;
+var u_textureLocation;
+var u_attrtextureLocation;
+var u_texsizeLocation;
+var u_attrtexsizeLocation;
+var u_SSAALocation;
+var u_texLocations = [];
+
+//render shader
+var renderProgram;
+var renderVertexAttribute;
+var vertexPositionBuffer;
+var frameBuffer;
+var u_textureLocationc;
+
+var time = 0;
 
 function initGL(){
 	message = document.getElementById("message");
@@ -47,6 +81,13 @@ function initBuffers() {
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
 	gl.bindTexture(gl.TEXTURE_2D, null);
 }
+
+var shaders_file = [
+    './shaders/render.vert',
+    './shaders/render.frag',
+    './shaders/pt.vert',
+    './shaders/pt.frag',
+];
 
 function initializeShader() {
 

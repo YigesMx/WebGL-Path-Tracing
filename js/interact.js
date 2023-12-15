@@ -1,5 +1,15 @@
 ///////////////////////////////////////////////////////////////////////////
+var angleX = 0;
+var angleY = 0;
+var zoomZ = 15.5;
 
+function init_interaction() {
+    canvas.onmousedown = handleMouseDown;
+    canvas.oncontextmenu = function (ev) { return false; };
+    document.onmouseup = handleMouseUp;
+    document.onmousemove = handleMouseMove;
+    document.onkeydown = handleKeyDown;
+}
 /************************* interaction ********************************/
 var mouseLeftDown = false;
 var mouseRightDown = false;

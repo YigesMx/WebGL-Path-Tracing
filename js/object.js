@@ -76,6 +76,9 @@ function addSphere() {
 	iterations = 0;
 }
 
+var DefaultDatas = [];
+var defaultSize = 6;
+
 function initDfaultScene() {
      
     //Light For Subsurface Scattering,only one light and always at first
