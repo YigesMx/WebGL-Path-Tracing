@@ -1,176 +1,30 @@
 precision highp float;
 
 #define PI 3.1415926585
-#define w 1.0
-#define h 7.0
 
 uniform float time;
-uniform int objnums;
+uniform int objNums;
 uniform vec3 cameraPos;
-uniform int SSAA;
+uniform int enableSSAA;
 
-uniform float u_iterations;
-uniform sampler2D texture;
-uniform sampler2D attrtexture;
+uniform float iterations;
+uniform sampler2D displayBufferTexture;
+uniform sampler2D objAttributesTexture;
 
-uniform vec2 texsize;
-uniform vec2 attrtexsize;
+uniform vec2 displayBufferTextureSize;
+uniform vec2 objAttributesTextureSize;
 
-varying vec3 InitRay;
+//varying vec2 texCoord;
+varying vec3 initRayDirection;
+
 const int MAX_OBJ_NUM = 30;
-const int numberOfObjects = MAX_OBJ_NUM;
-
-
-/*Utility Functions*/
-void translate(inout mat4 origin,in vec3 dir)
-{
-   mat4 trans = mat4(1.0,0.0,0.0,0.0,
-                     0.0,1.0,0.0,0.0,
-                     0.0,0.0,1.0,0.0,
-                     dir.x,dir.y,dir.z,1.0);
-   origin =  origin * trans;
-}
-
-void scale(inout mat4 origin,in vec3 scalev)
-{
-   mat4 scale = mat4(scalev.x,0.0,0.0,0.0,
-                     0.0,scalev.y,0.0,0.0,
-                     0.0,0.0,scalev.z,0.0,
-                     0.0,0.0,0.0,1.0);
-   origin =  origin * scale;
-}
-
-
-void rotateX (inout mat4 origin, in float angle) {
-    mat4 dest = origin;
-    float s = sin(angle), c = cos(angle),
-        a10 = origin[1][0], a11 = origin[1][1], a12 = origin[1][2], a13 = origin[1][3],
-        a20 = origin[2][0], a21 = origin[2][1], a22 = origin[2][2], a23 = origin[2][3];
-
-    dest[1][0] = a10 * c + a20 * s; dest[1][1] = a11 * c + a21 * s;
-    dest[1][2] = a12 * c + a22 * s; dest[1][3] = a13 * c + a23 * s;
-    dest[2][0] = a10 * -s + a20 * c; dest[2][1] = a11 * -s + a21 * c;
-    dest[2][2] = a12 * -s + a22 * c; dest[2][3] = a13 * -s + a23 * c;
-
-    origin = dest;
-    return;
-}
-
-
-void rotateY  (inout mat4 origin, in float angle) {
-    mat4 dest = origin;
-    float s = sin(angle),c = cos(angle),
-        a00 = origin[0][0],a01 = origin[0][1],a02 = origin[0][2],a03 = origin[0][3],
-        a20 = origin[2][0],a21 = origin[2][1],a22 = origin[2][2],a23 = origin[2][3];
-
-    dest[0][0] = a00 * c + a20 * -s; dest[0][1] = a01 * c + a21 * -s;
-    dest[0][2] = a02 * c + a22 * -s; dest[0][3] = a03 * c + a23 * -s;
-    dest[2][0] = a00 * s + a20 * c; dest[2][1] = a01 * s + a21 * c;
-    dest[2][2] = a02 * s + a22 * c; dest[2][3] = a03 * s + a23 * c;
-
-    origin = dest;
-    return;
-}
-
-
-void rotateZ (inout mat4 origin, in float angle) {
-    mat4 dest = origin;
-    float s = sin(angle),c = cos(angle),
-        a00 = origin[0][0], a01 = origin[0][1], a02 = origin[0][2], a03 = origin[0][3],
-        a10 = origin[1][0], a11 = origin[1][1], a12 = origin[1][2], a13 = origin[1][3];
-
-    dest[0][0] = a00 * c + a10 * s; dest[0][1] = a01 * c + a11 * s;
-    dest[0][2] = a02 * c + a12 * s; dest[0][3] = a03 * c + a13 * s;
-
-    dest[1][0] = a00 * -s + a10 * c; dest[1][1] = a01 * -s + a11 * c;
-    dest[1][2] = a02 * -s + a12 * c; dest[1][3] = a03 * -s + a13 * c;
-
-    origin = dest;
-    return;
-}
-
-mat4 inversemat(in mat4 mat)
-{
-    mat4 dest = mat4(1.0);
-    float a00 = mat[0][0], a01 = mat[0][1], a02 = mat[0][2], a03 = mat[0][3],
-        a10 = mat[1][0], a11 = mat[1][1], a12 = mat[1][2], a13 = mat[1][3],
-        a20 = mat[2][0], a21 = mat[2][1], a22 = mat[2][2], a23 = mat[2][3],
-        a30 = mat[3][0], a31 = mat[3][1], a32 = mat[3][2], a33 = mat[3][3],
-        b00 = a00 * a11 - a01 * a10, b01 = a00 * a12 - a02 * a10,
-        b02 = a00 * a13 - a03 * a10, b03 = a01 * a12 - a02 * a11,
-        b04 = a01 * a13 - a03 * a11, b05 = a02 * a13 - a03 * a12,
-        b06 = a20 * a31 - a21 * a30, b07 = a20 * a32 - a22 * a30,
-        b08 = a20 * a33 - a23 * a30, b09 = a21 * a32 - a22 * a31,
-        b10 = a21 * a33 - a23 * a31, b11 = a22 * a33 - a23 * a32,
-        d = (b00 * b11 - b01 * b10 + b02 * b09 + b03 * b08 - b04 * b07 + b05 * b06),
-        invDet;
-
-    if (d<0.000001) { return mat4(1.0);}
-    invDet = 1.0 / d;
-
-    dest[0][0] = (a11 * b11 - a12 * b10 + a13 * b09) * invDet; dest[0][1] = (-a01 * b11 + a02 * b10 - a03 * b09) * invDet;
-    dest[0][2] = (a31 * b05 - a32 * b04 + a33 * b03) * invDet; dest[0][3] = (-a21 * b05 + a22 * b04 - a23 * b03) * invDet;
-    dest[1][0] = (-a10 * b11 + a12 * b08 - a13 * b07) * invDet; dest[1][1] = (a00 * b11 - a02 * b08 + a03 * b07) * invDet;
-    dest[1][2] = (-a30 * b05 + a32 * b02 - a33 * b01) * invDet; dest[1][3] = (a20 * b05 - a22 * b02 + a23 * b01) * invDet;
-    dest[2][0] = (a10 * b10 - a11 * b08 + a13 * b06) * invDet; dest[2][1] = (-a00 * b10 + a01 * b08 - a03 * b06) * invDet;
-    dest[2][2] = (a30 * b04 - a31 * b02 + a33 * b00) * invDet; dest[2][3] = (-a20 * b04 + a21 * b02 - a23 * b00) * invDet;
-    dest[3][0] = (-a10 * b09 + a11 * b07 - a12 * b06) * invDet; dest[3][1] = (a00 * b09 - a01 * b07 + a02 * b06) * invDet;
-    dest[3][2] = (-a30 * b03 + a31 * b01 - a32 * b00) * invDet; dest[3][3] = (a20 * b03 - a21 * b01 + a22 * b00) * invDet;
-
-    return dest;
-}
-
-mat4 transposemat(in mat4 mat)
-{
-    mat4 dest = mat4(1.0);
-    dest[0][0] = mat[0][0]; dest[0][1] = mat[1][0]; dest[0][2] = mat[2][0]; dest[0][3] = mat[3][0];
-    dest[1][0] = mat[0][1]; dest[1][1] = mat[1][1]; dest[1][2] = mat[2][1]; dest[1][3] = mat[3][1];
-    dest[2][0] = mat[0][2]; dest[2][1] = mat[1][2]; dest[2][2] = mat[2][2]; dest[2][3] = mat[3][2];
-    dest[3][0] = mat[0][3]; dest[3][1] = mat[1][3]; dest[3][2] = mat[2][3]; dest[3][3] = mat[3][3];
-    return dest;
-}
-
-
-struct RAY{
-	vec3 origin;
-	vec3 dir;
-	float IOR;
-};
-
-struct GEOM{
-	vec3 color;
-
-    int type;
-    int textureType;
-
-	int reflective;
-	int refractive;
-    float reflectivity;
-
-	float indexOfRefraction;
-    int subsurfaceScatter;
-	int emittance;
-
-    mat4 model;
-    mat4 invmodel;
-    mat4 transinvmodel;
-
-};
-
-struct INTERSECT{
-	vec3 IntersectP;
-	vec3 IntersectN;
-	GEOM IntersectG;
-};
-
-
 
 /*For Intersect Detection*/
-vec3 getPointOnRay(RAY r, float t){
-  return r.origin + (t - 0.0001) * normalize(r.dir);
+vec3 getPointOnRay(Ray ray, float dis){
+  return ray.origin + (dis - 0.0001) * normalize(ray.direction);
 }
 
-float intersectSphere(GEOM g, vec3 rStart, vec3 rDir, out float t,  out vec3 normal, out vec3 pos) {
+float intersectSphere(Object g, vec3 rStart, vec3 rDir, out float t,  out vec3 normal, out vec3 pos) {
     float radius = 0.5;
     vec3 ro = (g.invmodel * vec4(rStart,1.0)).xyz;
     vec3 rd = (normalize(g.invmodel * vec4(rDir,0.0))).xyz;
@@ -179,11 +33,11 @@ float intersectSphere(GEOM g, vec3 rStart, vec3 rDir, out float t,  out vec3 nor
 	if(sqrt(dot(ro,ro))<radius)
 		sign=-1.0;
 
-    RAY rt;
+    Ray rt;
     rt.origin = ro;
-    rt.dir = rd;
+    rt.direction = rd;
 
-    float vDotDirection = dot(rt.origin, rt.dir);
+    float vDotDirection = dot(rt.origin, rt.direction);
 	float radicand = vDotDirection * vDotDirection - (dot(rt.origin, rt.origin) - radius * radius);
 	if (radicand < 0.0){
 		return -1.0;
@@ -211,14 +65,14 @@ float intersectSphere(GEOM g, vec3 rStart, vec3 rDir, out float t,  out vec3 nor
     return length(rStart - realIntersectionPoint);
 }
 
-float intersectCube(GEOM g, vec3 rStart, vec3 rDir, out float t, out vec3 normal, out vec3 pos){
+float intersectCube(Object g, vec3 rStart, vec3 rDir, out float t, out vec3 normal, out vec3 pos){
     vec3 ro = (g.invmodel * vec4(rStart,1.0)).xyz;
     vec3 rd = (normalize(g.invmodel * vec4(rDir,0.0))).xyz;
 
 
-    RAY rt;
+    Ray rt;
     rt.origin = ro;
-    rt.dir = rd;
+    rt.direction = rd;
 
     float sign=1.0;
 	if(abs(rt.origin.x)-0.5<0.0&&abs(rt.origin.y)-0.5<0.0&&abs(rt.origin.z)-0.5<0.0)
@@ -281,127 +135,7 @@ float intersectCube(GEOM g, vec3 rStart, vec3 rDir, out float t, out vec3 normal
     return length(rStart - realIntersectionPoint);
 }
 
-
-float intersectCylinder(GEOM g, vec3 rStart, vec3 rDir, out float t, out vec3 normal, out vec3 pos){
-    float ELP = 0.000001;
-	vec3 NewP0 = (g.invmodel * vec4(rStart,1.0)).xyz;    //pos
-	vec3 NewV0 = (normalize(g.invmodel * vec4(rDir,0.0))).xyz;    //normal
-	NewV0=normalize(NewV0);
-
-	vec2 O = vec2(0.0,0.0);
-	vec2 NewV0_2 = vec2(NewV0[0],NewV0[2]);
-	vec2 NewP0_2 =vec2(NewP0[0],NewP0[2]);
-	float a=dot(NewV0_2,NewV0_2);
-	float b=dot(vec2(2.0*NewV0_2[0],2.0*NewV0_2[1]),NewP0_2-O);
-	float c=dot(NewP0_2-O,NewP0_2-O)-0.5*0.5;
-
-	float sign=1.0;
-	if(abs(NewP0[1])-0.5<0.0 && sqrt(dot(NewP0_2,NewP0_2))<0.5)
-		sign=-1.0;
-
-
-	float t1=1000000.0;
-	float t2=1000000.0;
-	if(NewV0[1]==0.0)
-	{
-		if(NewP0[1]+0.5==0.0)
-		{
-			vec2 P = vec2(NewP0[0],NewP0[2]);
-			float c=dot(P-O,P-O)-0.5*0.5;
-			if(c<=0.0)
-				return -1.0;
-		}
-		if(NewP0[1]-0.5==0.0)
-		{
-			vec2 P = vec2(NewP0[0],NewP0[2]);
-			float c=dot(P-O,P-O)-0.5*0.5;
-			if(c<=0.0)
-				return -1.0;
-		}
-
-	}
-	else
-	{
-		t1=(-0.5-NewP0[1])/NewV0[1];
-		if(t1>=0.0)
-		{
-			vec2 P = vec2(NewP0[0]+t1*NewV0[0],NewP0[2]+t1*NewV0[2]);
-			float c=dot(P-O,P-O)-0.5*0.5;
-			if(c>0.0)
-				t1=1000000.0;
-		}
-		else
-			t1=1000000.0;
-
-		t2=(0.5-NewP0[1])/NewV0[1];
-		if(t2>=0.0)
-		{
-			vec2 P = vec2(NewP0[0]+t2*NewV0[0],NewP0[2]+t2*NewV0[2]);
-			float c=dot(P-O,P-O)-0.5*0.5;
-			if(c>0.0)
-				t2=1000000.0;
-		}
-		else
-			t2=1000000.0;
-	}
-
-
-	t=1000000.0;
-	if(b*b-4.0*a*c>=0.0)
-	{
-		float t0=(-b-sqrt(b*b-4.0*a*c))/(2.0*a);
-		float t1=(-b+sqrt(b*b-4.0*a*c))/(2.0*a);
-		float temp;
-		if (t0 > t1) {
-			temp = t1;
-			t1 = t0;
-			t0 = temp;
-		}
-
-		if (t1 < -0.00001)
-			return -1.0;
-		else if (t0 < -0.00001)
-			t=t1;
-		else
-			t=t0;
-
-		if(t>=0.0)
-		{
-			vec3 P=NewP0+t*NewV0;
-			if(P[1]>=-0.5&&P[1]<=0.5)
-			    t=t;
-			else
-				t=1000000.0;
-		}
-		else
-			t=1000000.0;
-	}
-
-
-	t=min(t,t1);
-	t=min(t,t2);
-	if(t!=1000000.0)
-	{
-		pos =NewP0+t*NewV0;
-
-		if(abs(pos[1]-0.5)<ELP)
-			normal = vec3(0.0,1.0,0.0);
-		else if(abs(pos[1]+0.5)<ELP)
-			normal = vec3(0.0,-1.0,0.0);
-		else
-			normal =vec3(pos[0],0.0,pos[2]);
-
-		normal = sign * normalize((g.transinvmodel * vec4(normal,0.0)).xyz);
-
-        pos = (g.model *vec4(pos,1.0)).xyz;
-		return length(pos - rStart)/length(rDir);
-	}
-
-	return -1.0;
-
-}
-
-float intersectPlane(GEOM g, vec3 rStart, vec3 rDir, out float t,  out vec3 normal, out vec3 pos) {	//on xz plane, normal: +y
+float intersectPlane(Object g, vec3 rStart, vec3 rDir, out float t,  out vec3 normal, out vec3 pos) {	//on xz plane, normal: +y
 	normal = vec3(0.0, 1.0, 0.0);
 
     vec3 ro = (g.invmodel * vec4(rStart,1.0)).xyz;
@@ -410,9 +144,9 @@ float intersectPlane(GEOM g, vec3 rStart, vec3 rDir, out float t,  out vec3 norm
 	if(dot(rd, normal) >= 0.0 || rd.y == 0.0)
 		return -1.0;
 
-	RAY rt;
+	Ray rt;
 	rt.origin = ro;
-	rt.dir = rd;
+	rt.direction = rd;
 
     t = -ro.y / rd.y;
 
@@ -429,9 +163,9 @@ float intersectPlane(GEOM g, vec3 rStart, vec3 rDir, out float t,  out vec3 norm
 	return length(rStart - realIntersectionPoint);
 }
 
-bool intersectWorld(RAY r, inout INTERSECT intersect, inout float dist) {
-    float attw = attrtexsize.r;
-    float atth = attrtexsize.g;
+bool intersectWorld(Ray r, inout Intersection intersect) {
+    float objAttributesTextureWidth = objAttributesTextureSize.x;
+    float objAttributesTextureHeight = objAttributesTextureSize.y;
 
 	float t;
 	float hitPointDistance = -1.0;
@@ -439,56 +173,58 @@ bool intersectWorld(RAY r, inout INTERSECT intersect, inout float dist) {
 	vec3 tempNormal = vec3(0);
 	vec3 tempIntersectionPoint = vec3(0);
 
-	for(int i =0;i<numberOfObjects;i++){
-        if(i>=objnums)
+	for(int i =0;i<MAX_OBJ_NUM;i++){
+        if(i>=objNums)
            break;
 
-        GEOM temp;
+        Object temp;
         float fix = float(i);
         float fiy = 0.0;
 
-        temp.type = int(5.0 * texture2D(attrtexture, vec2((7.0 * fix + 1.0)/attw,fiy/atth)).r);
+        temp.type = int(5.0 * texture2D(objAttributesTexture, vec2((7.0 * fix + 1.0)/objAttributesTextureWidth,fiy/objAttributesTextureHeight)).r);
         mat4 modelview = mat4(1.0);
-        translate(modelview,20.0 * (texture2D(attrtexture, vec2((7.0 * fix + 4.0)/attw,fiy/atth)).rgb-0.5));
-        vec3 rotv =  texture2D(attrtexture, vec2((7.0 * fix + 5.0)/attw,fiy/atth)).rgb;
+        translate(modelview,20.0 * (texture2D(objAttributesTexture, vec2((7.0 * fix + 4.0)/objAttributesTextureWidth,fiy/objAttributesTextureHeight)).rgb-0.5));
+        vec3 rotv =  texture2D(objAttributesTexture, vec2((7.0 * fix + 5.0)/objAttributesTextureWidth,fiy/objAttributesTextureHeight)).rgb;
         rotateX(modelview,360.0 * PI / 180.0 * rotv.x);
         rotateY(modelview,360.0 * PI / 180.0 * rotv.y);
         rotateZ(modelview,360.0 * PI / 180.0 * rotv.z);
-        scale(modelview,10.0 * texture2D(attrtexture, vec2((7.0 * fix + 6.0)/attw,fiy/atth)).rgb);
+        scale(modelview,10.0 * texture2D(objAttributesTexture, vec2((7.0 * fix + 6.0)/objAttributesTextureWidth,fiy/objAttributesTextureHeight)).rgb);
         temp.model = modelview;
         temp.invmodel = inversemat(temp.model);
         temp.transinvmodel = transposemat(temp.invmodel);
 
 
 		if(temp.type == 0){
-			hitPointDistance = intersectSphere(temp, r.origin, r.dir, t, tempNormal, tempIntersectionPoint);
-		}
-        else if(temp.type == 1)
-        {
-		    hitPointDistance = intersectPlane(temp, r.origin, r.dir, t, tempNormal, tempIntersectionPoint);
-        }
-        else
-        {
-		    hitPointDistance = intersectCube(temp, r.origin, r.dir, t, tempNormal, tempIntersectionPoint);
+
+			hitPointDistance = intersectSphere(temp, r.origin, r.direction, t, tempNormal, tempIntersectionPoint);
+
+		} else if(temp.type == 1) {
+
+		    hitPointDistance = intersectPlane(temp, r.origin, r.direction, t, tempNormal, tempIntersectionPoint);
+
+        } else {
+
+		    hitPointDistance = intersectCube(temp, r.origin, r.direction, t, tempNormal, tempIntersectionPoint);
+
         }
 
 
 		if(hitPointDistance > 0.0 && hitPointDistance < closestIntersectionDistance){
-                temp.color = texture2D(attrtexture, vec2((7.0 * fix)/attw,0.0/atth)).rgb;
-                temp.textureType = int(5.0 * texture2D(attrtexture, vec2((7.0 * fix + 1.0)/attw,fiy/atth)).g);
+                temp.color = texture2D(objAttributesTexture, vec2((7.0 * fix)/objAttributesTextureWidth,0.0/objAttributesTextureHeight)).rgb;
+                //temp.textureType = int(5.0 * texture2D(objAttributesTexture, vec2((7.0 * fix + 1.0)/attw,fiy/atth)).g);
 
-                temp.reflective = int(1.0 * texture2D(attrtexture, vec2((7.0 * fix + 2.0)/attw,fiy/atth)).r);
-                temp.refractive = int(1.0 * texture2D(attrtexture, vec2((7.0 * fix + 2.0)/attw,fiy/atth)).g);
-                temp.reflectivity = texture2D(attrtexture, vec2((7.0 * fix + 2.0)/attw,fiy/atth)).b;
+                temp.reflective = int(1.0 * texture2D(objAttributesTexture, vec2((7.0 * fix + 2.0)/objAttributesTextureWidth,fiy/objAttributesTextureHeight)).r);
+                temp.refractive = int(1.0 * texture2D(objAttributesTexture, vec2((7.0 * fix + 2.0)/objAttributesTextureWidth,fiy/objAttributesTextureHeight)).g);
+                temp.reflectivity = texture2D(objAttributesTexture, vec2((7.0 * fix + 2.0)/objAttributesTextureWidth,fiy/objAttributesTextureHeight)).b;
 
-                temp.indexOfRefraction = max(3.0 * texture2D(attrtexture, vec2((7.0 * fix + 3.0)/attw,fiy/atth)).r, 1.0);
-                temp.subsurfaceScatter = int(texture2D(attrtexture, vec2((7.0 * fix + 3.0)/attw,fiy/atth)).g);
-                temp.emittance = int(25.0 * texture2D(attrtexture, vec2((7.0 * fix + 3.0)/attw,fiy/atth)).b);
+                temp.IOR = max(3.0 * texture2D(objAttributesTexture, vec2((7.0 * fix + 3.0)/objAttributesTextureWidth,fiy/objAttributesTextureHeight)).r, 1.0);
+                temp.subsurfaceScatter = int(texture2D(objAttributesTexture, vec2((7.0 * fix + 3.0)/objAttributesTextureWidth,fiy/objAttributesTextureHeight)).g);
+                temp.emittance = int(25.0 * texture2D(objAttributesTexture, vec2((7.0 * fix + 3.0)/objAttributesTextureWidth,fiy/objAttributesTextureHeight)).b);
 
 				closestIntersectionDistance = hitPointDistance;
-                intersect.IntersectP = tempIntersectionPoint;
-                intersect.IntersectN = tempNormal;
-				intersect.IntersectG = temp;
+                intersect.intersectPos = tempIntersectionPoint;
+                intersect.intersectNormal = tempNormal;
+				intersect.intersectObj = temp;
 		}
 	}
 
@@ -498,250 +234,145 @@ bool intersectWorld(RAY r, inout INTERSECT intersect, inout float dist) {
 		return false;
 }
 
+const int depth = 5;
+vec3 pathTrace(inout Ray ray, inout vec3 outColor){
 
-
-/*For Random Stuff*/
-float getrandom(vec3 noise, float seed) {
-	return fract(sin(dot(InitRay + seed, noise)) * 43758.5453 + seed);
-}
-
-highp float rand(vec2 co)
-{
-    highp float a = 12.9898,b = 78.233,c = 43758.5453,dt= dot(co.xy ,vec2(a,b)),sn= mod(dt,3.14);
-    return fract(sin(sn) * c);
-}
-
-vec3 calculateRandomDirectionInHemisphere(float seed, vec3 normal)
-{
-	float u = getrandom(vec3(12.9898, 78.233, 151.7182), seed);
-	float v = getrandom(vec3(63.7264, 10.873, 623.6736), seed);
-
-	float up = sqrt(u);
-	float over = sqrt(1.0 - up * up);
-	float around = v * 3.141592 * 2.0;
-
-	vec3 directionNotNormal;
-	if (abs(normal.x) < 0.577350269189) {
-		directionNotNormal = vec3(1, 0, 0);
-	} else if (abs(normal.y) < 0.577350269189) {
-		directionNotNormal = vec3(0, 1, 0);
-	} else {
-		directionNotNormal = vec3(0, 0, 1);
-	}
-
-	vec3 perpendicularDirection1 = normalize(cross(normal, directionNotNormal));
-	vec3 perpendicularDirection2 = normalize(cross(normal, perpendicularDirection1));
-
-	return ( up * normal ) + ( cos(around) * over * perpendicularDirection1 ) + ( sin(around) * over * perpendicularDirection2 );
-}
-
-/*For Refraction*/
-struct Fresnel {
-  float reflectionCoefficient;
-  float transmissionCoefficient;
-};
-
-Fresnel calculateFresnel(vec3 normal, vec3 incident, float incidentIOR, float transmittedIOR) {
-	Fresnel fresnel;
-	incident = normalize(incident);
-	normal = normalize(normal);
-    float cosThetaI = abs(dot(normal, incident));
-    float sinIncidence = sqrt(1.0-pow(cosThetaI,2.0));
-    float cosThetaT = sqrt(1.0-pow(((incidentIOR/transmittedIOR)*sinIncidence),2.0));
-	if (cosThetaT <= 0.0 ) {
-		fresnel.reflectionCoefficient = 1.0;
-		fresnel.transmissionCoefficient = 0.0;
-		return fresnel;
-	}else{
-
-		float RsP = pow( (incidentIOR * cosThetaI - transmittedIOR * cosThetaT) / (incidentIOR * cosThetaI + transmittedIOR * cosThetaT) , 2.0);
-		float RpP = pow( (incidentIOR * cosThetaT - transmittedIOR * cosThetaI) / (incidentIOR * cosThetaT + transmittedIOR * cosThetaI) , 2.0);
-		fresnel.reflectionCoefficient = (RsP + RpP) / 2.0;
-		fresnel.transmissionCoefficient = 1.0 - fresnel.reflectionCoefficient;
-		return fresnel;
-	}
-
-}
-
-
-///*For Subsurface Scattering  https://machinesdontcare.wordpress.com/tag/subsurface/ */
-float halfLambert(in vec3 vect1, in vec3 vect2)
-{
-	float product = dot(vect1,vect2);
-	return product * 0.5 + 0.5;
-}
-
-float blinnPhongSpecular(in vec3 normalVec, in vec3 lightVec, in float specPower)
-{
-	vec3 halfAngle = normalize(normalVec + lightVec);
-	return pow(clamp(0.0,1.0,dot(normalVec,halfAngle)),specPower);
-}
-
-
-vec3 subScatterFS(in INTERSECT intersect,in float seed)
-{
-	float RimScalar = 1.0;
-	float MaterialThickness = 0.5;
-	vec3 ExtinctionCoefficient = vec3(1.0,1.0,1.0);
-	vec3 SpecColor = vec3(1.0,1.0,1.0);
-    vec3 lightPoint = vec3(0.0,5.0,0.0);
-
-	float attenuation = 10.0 * (1.0 / distance(lightPoint,intersect.IntersectP));
-	vec3 eVec = normalize(intersect.IntersectP);
-	vec3 lVec = normalize(lightPoint - intersect.IntersectP);
-	vec3 wNorm = normalize(intersect.IntersectN);
-
-	vec3 dotLN = vec3(halfLambert(lVec,wNorm) * attenuation);
-	dotLN *= intersect.IntersectG.color;
-
-	vec3 indirectLightComponent = vec3(MaterialThickness * max(0.0,dot(-wNorm,lVec)));
-	indirectLightComponent += MaterialThickness * halfLambert(-eVec,lVec);
-	indirectLightComponent *= attenuation;
-	indirectLightComponent.r *= ExtinctionCoefficient.r;
-	indirectLightComponent.g *= ExtinctionCoefficient.g;
-	indirectLightComponent.b *= ExtinctionCoefficient.b;
-
-	vec3 rim = vec3(1.0 - max(0.0,dot(wNorm,eVec)));
-	rim *= rim;
-	rim *= max(0.0,dot(wNorm,lVec)) * SpecColor.rgb;
-
-	vec4 finalCol = vec4(dotLN,1.0) + vec4(indirectLightComponent,1.0);
-	finalCol.rgb += (rim * RimScalar * attenuation * finalCol.a);
-    float SpecularPower = 15.0;
-	finalCol.rgb += vec3(blinnPhongSpecular(wNorm,lVec,SpecularPower) * attenuation * SpecColor * finalCol.a * 0.1);
-	finalCol.rgb *= vec3(1.0);
-
-	return finalCol.rgb;
-}
-
-const int depth = 10;
-vec3 pathTrace(inout RAY r, int rayDepth, inout vec3 col){
 	vec3 colorMask = vec3(1.0);
-	float incidentIOR = 1.0;
-	float transmittedIOR = 1.0;
-	bool internalReflection = false;
-	bool reflective = false;
-	bool refractive = false;
+//	float incidentIOR = 1.0;
+//	float transmittedIOR = 1.0;
+//	bool internalReflection = false;
+//	bool reflective = false;
+//	bool refractive = false;
 
     float shift = 0.01;
-	for (int i = 0; i <depth; ++i) {
-		INTERSECT intersect;
-		float dist = -1.0;
+	for (int i = 0; i < depth; ++i) {
+
+		Intersection intersect;
         float seed = time + float(i);
 
-		if (intersectWorld(r, intersect,dist)) {
-			if(intersect.IntersectG.emittance > 0)
-			{//is light
-				colorMask = colorMask * intersect.IntersectG.color * float(intersect.IntersectG.emittance);
-				col = colorMask;
-			    return col;
+		if (intersectWorld(ray, intersect)) {
+
+			// 光源物体
+			if(intersect.intersectObj.emittance > 0){
+				colorMask = colorMask * intersect.intersectObj.color * float(intersect.intersectObj.emittance);
+				outColor = colorMask;
+			    return outColor;
 			}
-            else if(intersect.IntersectG.refractive == 0 && intersect.IntersectG.reflective == 0)
-            {//Non light object
-				colorMask *= intersect.IntersectG.color;
-				col = colorMask;
 
-				float random = rand(intersect.IntersectP.xy);
-				r.dir = normalize(calculateRandomDirectionInHemisphere(seed + random, intersect.IntersectN));
-                r.origin = intersect.IntersectP + r.dir * shift;
-			}
-            else
-            {
-                 bool isInsideOut = dot(r.dir,intersect.IntersectN) > 0.0; //out:> 0.0 true,in :<=0.0  false
-                if(intersect.IntersectG.refractive > 0)   //refractive object must have reflective
-                {
-                    vec3 random = vec3(rand(intersect.IntersectP.xy),rand(intersect.IntersectP.xz),rand(intersect.IntersectP.yz)) ;
-                    float oldIOR = r.IOR;
-                    float newIOR = intersect.IntersectG.indexOfRefraction;
+			Ray newRay = ray;
 
-                    Fresnel fresnel;
+			// 非光源物体
+			if (intersect.intersectObj.refractive == 0 && intersect.intersectObj.reflective == 0){ // 仅漫反射
 
-                    float reflect_range = -1.0;
-                    float IOR12 = oldIOR/newIOR;
-                    vec3 reflectR = reflect(r.dir,intersect.IntersectN);
-                    vec3 refractR = refract(r.dir,intersect.IntersectN,IOR12);
-                    fresnel = calculateFresnel(intersect.IntersectN,r.dir,oldIOR,newIOR);
+				colorMask *= intersect.intersectObj.color;
+//				outColor = colorMask;
 
-                    reflect_range =  fresnel.reflectionCoefficient;
+				newRay.direction = normalize(calculateRandomDirectionInHemisphere(intersect.intersectNormal, initRayDirection, seed + randOnVec2(intersect.intersectPos.xy)));
+                newRay.origin = intersect.intersectPos + newRay.direction * shift;
 
-                    float randomnum = getrandom(random,seed);
-                    if(randomnum <reflect_range)
+			} else { // 有反射或折射
+
+				if(intersect.intersectObj.refractive > 0) { // 折射，且有折射必有反射
+
+					// 判断入射光线是否从物体内部射出
+					bool isInsideOut = dot(ray.direction,intersect.intersectNormal) > 0.0; //out:> 0.0 true,in :<=0.0  false
+
+                    float oldIOR = ray.IOR;
+                    float newIOR = intersect.intersectObj.IOR;
+
+                    // float reflectRange = -1.0;
+                    float IORratio = oldIOR/newIOR;
+                    vec3 reflectDirection = reflect(ray.direction, intersect.intersectNormal);
+                    vec3 refractDirection = refract(ray.direction, intersect.intersectNormal, IORratio);
+
+					Fresnel fresnel = calculateFresnel(intersect.intersectNormal, ray.direction, oldIOR, newIOR);
+
+					float reflectRange = fresnel.reflectionCoefficient;
+
+                    vec3 randomvec3 = vec3(randOnVec2(intersect.intersectPos.xy),randOnVec2(intersect.intersectPos.xz),randOnVec2(intersect.intersectPos.yz)) ;
+                    float randomnum = randOnVec3WithNoiseAndSeed(initRayDirection, randomvec3, seed);
+
+                    if(randomnum < reflectRange){
+                        newRay.direction = reflectDirection;
+                        newRay.origin = intersect.intersectPos + shift * newRay.direction;
+
+						if(intersect.intersectObj.subsurfaceScatter > 0){
+							float random = randOnVec2(intersect.intersectPos.xy);
+							colorMask *= subScatterFS(intersect, random);
+						}
+
+                    } else {
+                        newRay.direction = refractDirection;
+                        newRay.origin = intersect.intersectPos + shift * newRay.direction;
+                    }
+
+
+//                    if(isInsideOut) //out object
+//                        newRay.IOR = 1.0;
+//                    else //into object
+//                        newRay.IOR = newIOR;
+
+					if(isInsideOut) //out object
+						newRay.IOR /= newIOR;
+					else //into object
+						newRay.IOR *= newIOR;
+
+                    colorMask *= intersect.intersectObj.color;
+                    //outColor = colorMask;
+
+                } else if(intersect.intersectObj.reflective > 0) { // 反射
+
+                    if(intersect.intersectObj.subsurfaceScatter > 0)
                     {
-                        r.dir = reflectR;
-                        r.origin = intersect.IntersectP + shift * r.dir;
-                                            if(intersect.IntersectG.subsurfaceScatter > 0)
-                    {
-                        float random = rand(intersect.IntersectP.xy);
+                        float random = randOnVec2(intersect.intersectPos.xy);
                         colorMask *= subScatterFS(intersect,random);
                     }
-                    }
-                    else
-                    {
-                        r.dir = refractR;
-                        r.origin = intersect.IntersectP + shift * r.dir;
-                    }
+                    colorMask *= intersect.intersectObj.color;
+                    //outColor = colorMask;
+                    newRay.IOR = 1.0;
 
-
-                    if(!isInsideOut)  //from objects
-                        r.IOR = newIOR;
-                    else   //from air
-                        r.IOR = 1.0;
-
-                    colorMask *= intersect.IntersectG.color;
-                    col = colorMask;
-                }
-                else if(intersect.IntersectG.reflective > 0)
-                {
-                    if(intersect.IntersectG.subsurfaceScatter > 0)
-                    {
-                        float random = rand(intersect.IntersectP.xy);
-                        colorMask *= subScatterFS(intersect,random);
-                    }
-                    colorMask *= intersect.IntersectG.color;
-                    col = colorMask;
-                    r.IOR = 1.0;
-                    r.dir = reflect(r.dir,intersect.IntersectN);
-                    r.origin = intersect.IntersectP + shift * r.dir;
+                    newRay.direction = reflect(ray.direction, intersect.intersectNormal);
+                    newRay.origin = intersect.intersectPos + shift * newRay.direction;
                 }
             }
-		}
-        else{
-			col = vec3(0.0,0.0,0.0);
-			return col;
+
+			ray = newRay;
+
+		} else { // 未与任何物体相交(与环境相交）
+
+			outColor = vec3(0.0,0.0,0.0);
+			return outColor;
 		}
 	}
 
-    col = vec3(0.0,0.0,0.0);
-	return col;
+    outColor = vec3(0.0,0.0,0.0);
+	return outColor;
 }
 
-void main(void)
-{
-	RAY r;
-	r.origin = cameraPos.xyz;
-	r.dir = normalize(InitRay);
+void main(void){
 
-    //screenz = 0.0
-    float t = (0.0 - cameraPos.z)/ r.dir.z;
-    vec3 InitPixel = r.origin + t * r.dir;
+	Ray ray;
+	ray.origin = cameraPos.xyz;
+	ray.direction = normalize(initRayDirection);
+	ray.IOR = 1.0;
 
-    float r1 = sin(getrandom(r.dir*vec3(12.9898, 78.233, 151.7182), time));
-	float r2 = cos(getrandom(r.dir*vec3(63.7264, 10.873, 623.6736), time + 1.0));
-    if(SSAA>0)
-    {
-        //jitter
-        float u = r1/2.0/texsize.r;
-        float v = r2/2.0/texsize.g;
-        InitPixel += vec3(u,v,0.0);
-        r.dir = normalize( InitPixel - cameraPos);
+    float dis = (0.0 - cameraPos.z)/ ray.direction.z;
+    vec3 initPixelVec = ray.origin + dis * ray.direction;
+
+    if(enableSSAA>0){ //jitter
+		float r1 = sin(randOnVec3WithNoiseAndSeed(initRayDirection, ray.direction*vec3(12.9898, 78.233, 151.7182), time));
+		float r2 = cos(randOnVec3WithNoiseAndSeed(initRayDirection, ray.direction*vec3(63.7264, 10.873, 623.6736), time + 1.0));
+        float u = r1/2.0/displayBufferTextureSize.r;
+        float v = r2/2.0/displayBufferTextureSize.g;
+        initPixelVec += vec3(u,v,0.0);
+        ray.direction = normalize( initPixelVec - cameraPos);
     }
 
+	vec3 finalColor = vec3(0.0);
 
-	r.IOR = 1.0; //IOR是指当前的折射率
+	pathTrace(ray, finalColor); // path tracing
 
-	vec3 finalCol = vec3(0.0);  //final color
-	pathTrace(r, 1, finalCol);
+	vec3 previousColor = texture2D(displayBufferTexture, vec2(gl_FragCoord.x / displayBufferTextureSize.x,gl_FragCoord.y / displayBufferTextureSize.y) ).rgb;
+	gl_FragColor = vec4(mix( finalColor/5.0, previousColor, iterations / ( iterations + 1.0 )), 1.0);
 
-	vec3 texCol = texture2D(texture, vec2(gl_FragCoord.x / texsize.r,gl_FragCoord.y / texsize.g) ).rgb;
-	gl_FragColor = vec4(mix( finalCol/5.0, texCol, pow(u_iterations,0.8) / (1.0+ pow(u_iterations,0.8) )), 1.0);
 }

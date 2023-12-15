@@ -1,33 +1,54 @@
 ///////////////////////////////////////////////////////////////////////////
 
+var objData = [];
 
 function AddObjsAttr(i) {
     // gl.useProgram(shaderProgram);
     //color:No need for map
-    attributes[28 * i + 0] = 255.0 * Datas[i].obj_color[0]; attributes[28 * i + 1] = 255.0 * Datas[i].obj_color[1]; attributes[28 * i + 2] = 255.0 * Datas[i].obj_color[2]; attributes[28 * i + 3] = 255.0;
+    objAttributesTextureData[28 * i + 0] = 255.0 * objData[i].obj_color[0];
+    objAttributesTextureData[28 * i + 1] = 255.0 * objData[i].obj_color[1];
+    objAttributesTextureData[28 * i + 2] = 255.0 * objData[i].obj_color[2];
+    objAttributesTextureData[28 * i + 3] = 255.0;
     //objtype:[0.0,5.0] to [0,255]  texturetype:[0.0,5.0] to [0,255] 
-    attributes[28 * i + 4] = 255.0 * Datas[i].obj_type / 5.0; attributes[28 * i + 5] = 255.0 * Datas[i].obj_textureType / 5.0; attributes[28 * i + 6] = 255.0; attributes[28 * i + 7] = 255.0;
+    objAttributesTextureData[28 * i + 4] = 255.0 * objData[i].obj_type / 5.0;
+    objAttributesTextureData[28 * i + 5] = 255.0 * objData[i].obj_textureType / 5.0;
+    objAttributesTextureData[28 * i + 6] = 255.0;
+    objAttributesTextureData[28 * i + 7] = 255.0;
     //mat1:No need for map
-    attributes[28 * i + 8] = 255.0 * Datas[i].obj_reflective; attributes[28 * i + 9] = 255.0 * Datas[i].obj_refractive; attributes[28 * i + 10] = 255.0 * Datas[i].obj_reflectivity; attributes[28 * i + 11] = 255.0;
+    objAttributesTextureData[28 * i + 8] = 255.0 * objData[i].obj_reflective;
+    objAttributesTextureData[28 * i + 9] = 255.0 * objData[i].obj_refractive;
+    objAttributesTextureData[28 * i + 10] = 255.0 * objData[i].obj_reflectivity;
+    objAttributesTextureData[28 * i + 11] = 255.0;
     //mat2:IOR[0,3] to [0,255]  emittance [0,25] to [0,255]
-    attributes[28 * i + 12] = 255.0/3.0 * Datas[i].obj_indexOfRefraction; attributes[28 * i + 13] = 255.0 * Datas[i].obj_subsurfaceScatter; attributes[28 * i + 14] = 255.0 * Datas[i].obj_emittance/25.0; attributes[28 * i + 15] = 255.0;
+    objAttributesTextureData[28 * i + 12] = 255.0/3.0 * objData[i].obj_indexOfRefraction;
+    objAttributesTextureData[28 * i + 13] = 255.0 * objData[i].obj_subsurfaceScatter;
+    objAttributesTextureData[28 * i + 14] = 255.0 * objData[i].obj_emittance/25.0;
+    objAttributesTextureData[28 * i + 15] = 255.0;
     //pos:[-10.0,10.0] to [0,255]
     var mind = -10.0;
     var maxd = 10.0;
-    attributes[28 * i + 16] = 255.0 * (Datas[i].obj_pos[0] - mind) / (maxd - mind); attributes[28 * i + 17] = 255.0 * (Datas[i].obj_pos[1] - mind) / (maxd - mind);
-    attributes[28 * i + 18] = 255.0 * (Datas[i].obj_pos[2] - mind) / (maxd - mind); attributes[28 * i + 19] = 255.0;
+    objAttributesTextureData[28 * i + 16] = 255.0 * (objData[i].obj_pos[0] - mind) / (maxd - mind);
+    objAttributesTextureData[28 * i + 17] = 255.0 * (objData[i].obj_pos[1] - mind) / (maxd - mind);
+    objAttributesTextureData[28 * i + 18] = 255.0 * (objData[i].obj_pos[2] - mind) / (maxd - mind);
+    objAttributesTextureData[28 * i + 19] = 255.0;
     //rot:[0.0,360.0] to [0,255]
-    attributes[28 * i + 20] = 255.0 * Datas[i].obj_rotation[0] / 360.0; attributes[28 * i + 21] = 255.0 * Datas[i].obj_rotation[1] / 360.0; attributes[28 * i + 22] = 255.0 * Datas[i].obj_rotation[2]/360.0; attributes[28 * i + 23] = 255.0;
+    objAttributesTextureData[28 * i + 20] = 255.0 * objData[i].obj_rotation[0] / 360.0;
+    objAttributesTextureData[28 * i + 21] = 255.0 * objData[i].obj_rotation[1] / 360.0;
+    objAttributesTextureData[28 * i + 22] = 255.0 * objData[i].obj_rotation[2]/360.0;
+    objAttributesTextureData[28 * i + 23] = 255.0;
     //scale:[0.0,10.0] to [0,255]
-    attributes[28 * i + 24] = 255.0 * Datas[i].obj_scale[0] / 10.0; attributes[28 * i + 25] = 255.0 * Datas[i].obj_scale[1] / 10.0; attributes[28 * i + 26] = 255.0 * Datas[i].obj_scale[2] / 10.0; attributes[28 * i + 27] = 255.0;
+    objAttributesTextureData[28 * i + 24] = 255.0 * objData[i].obj_scale[0] / 10.0;
+    objAttributesTextureData[28 * i + 25] = 255.0 * objData[i].obj_scale[1] / 10.0;
+    objAttributesTextureData[28 * i + 26] = 255.0 * objData[i].obj_scale[2] / 10.0;
+    objAttributesTextureData[28 * i + 27] = 255.0;
 
 }
 
 var cubeNum = 0;
 function addCube() {
-    if (Datas.length == 31)
+    if (objData.length == 31)
         return;
-	Datas.push({
+	objData.push({
 		obj_pos: [Math.random()*10-5, Math.random()*10-5, Math.random()*10-5],
 		obj_scale: [1.0, 1.0, 1.0],
 		obj_rotation: [Math.random()*360, Math.random()*360, Math.random()*360],
@@ -42,9 +63,9 @@ function addCube() {
 		obj_subsurfaceScatter: 0
 	});
 
-    AddObjsAttr(Datas.length - 1);
+    AddObjsAttr(objData.length - 1);
 
-    GUIAddObj("Cube " + ++cubeNum, Datas.length - 1);
+    GUIAddObj("Cube " + ++cubeNum, objData.length - 1);
 		
 	iterations = 0;
 }
@@ -52,9 +73,9 @@ function addCube() {
 var sphereNum = 3;
 
 function addSphere() {
-    if (Datas.length == 31)
+    if (objData.length == 31)
         return;
-	Datas.push({
+	objData.push({
 		obj_pos: [Math.random()*10-5, Math.random()*10-5, Math.random()*10-5],
 		obj_scale: [1.0, 1.0, 1.0],
 		obj_rotation: [Math.random()*360, Math.random()*360, Math.random()*360],
@@ -69,9 +90,9 @@ function addSphere() {
 		obj_subsurfaceScatter: 0
 	});
 
-    AddObjsAttr(Datas.length - 1);
+    AddObjsAttr(objData.length - 1);
 
-    GUIAddObj("Sphere " + ++sphereNum, Datas.length - 1);	
+    GUIAddObj("Sphere " + ++sphereNum, objData.length - 1);
 
 	iterations = 0;
 }
@@ -307,10 +328,10 @@ function initDfaultScene() {
 }
 
 function defaultScene() {
-	Datas.length = 0;
+	objData.length = 0;
 	
 	for (var i = 0; i < DefaultDatas.length; i++) {
-			Datas[i] = DefaultDatas[i];
+			objData[i] = DefaultDatas[i];
 			AddObjsAttr(i);
 	}
 	

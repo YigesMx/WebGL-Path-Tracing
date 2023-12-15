@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="VcsDirectoryMappings">
+    <mapping directory="$PROJECT_DIR$" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/0-refs/WebGL_PathTracer" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/0-refs/raytracing-python" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/0-refs/three-gpu-pathtracer" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/0-refs/webgl-ray-tracer" vcs="Git" />
   </component>
 </project>
