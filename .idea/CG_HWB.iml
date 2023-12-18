@@ -5,6 +5,10 @@
       <excludeFolder url="file://$MODULE_DIR$/.tmp" />
       <excludeFolder url="file://$MODULE_DIR$/temp" />
       <excludeFolder url="file://$MODULE_DIR$/tmp" />
+      <excludeFolder url="file://$MODULE_DIR$/0-refs" />
+      <excludeFolder url="file://$MODULE_DIR$/0-refs/three-gpu-pathtracer/.parcel-cache" />
+      <excludeFolder url="file://$MODULE_DIR$/0-refs/three-gpu-pathtracer/example/dev-bundle" />
+      <excludeFolder url="file://$MODULE_DIR$/.idea/dictionaries" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

@@ -1,6 +1,6 @@
 precision highp float;
 
-#define PI 3.1415926585
+#define PI 3.14159265358979323846264
 
 uniform float time;
 uniform int objNums;
@@ -8,11 +8,36 @@ uniform vec3 cameraPos;
 uniform int enableSSAA;
 
 uniform float iterations;
-uniform sampler2D displayBufferTexture;
-uniform sampler2D objAttributesTexture;
 
+uniform sampler2D displayBufferTexture;
 uniform vec2 displayBufferTextureSize;
+#define displayBufferTextureWidth displayBufferTextureSize.x
+#define displayBufferTextureHeight displayBufferTextureSize.y
+
+uniform sampler2D objAttributesTexture;
 uniform vec2 objAttributesTextureSize;
+#define objAttributesTextureWidth objAttributesTextureSize.x
+#define objAttributesTextureHeight objAttributesTextureSize.y
+uniform int objSectionsPerObj;
+
+uniform sampler2D materialAttributesTexture;
+uniform vec2 materialAttributesTextureSize;
+#define materialAttributesWidth materialAttributesTextureSize.x
+#define materialAttributesHeight materialAttributesTextureSize.y
+uniform int materialSectionsPerMaterial;
+
+uniform int rootBVH;
+
+uniform sampler2D bvhsAttributesTexture;
+uniform vec2 bvhsAttributesTextureSize;
+#define bvhsAttributesTextureWidth bvhsAttributesTextureSize.x
+#define bvhsAttributesTextureHeight bvhsAttributesTextureSize.y
+uniform int bvhsSectionsPerNode;
+
+uniform sampler2D elementIDMapAttributesTexture;
+uniform vec2 elementIDMapAttributesTextureSize;
+#define elementIDMapAttributesTextureWidth elementIDMapAttributesTextureSize.x
+#define elementIDMapAttributesTextureHeight elementIDMapAttributesTextureSize.y
 
 //varying vec2 texCoord;
 varying vec3 initRayDirection;
@@ -26,8 +51,8 @@ vec3 getPointOnRay(Ray ray, float dis){
 
 float intersectSphere(Object g, vec3 rStart, vec3 rDir, out float t,  out vec3 normal, out vec3 pos) {
     float radius = 0.5;
-    vec3 ro = (g.invmodel * vec4(rStart,1.0)).xyz;
-    vec3 rd = (normalize(g.invmodel * vec4(rDir,0.0))).xyz;
+    vec3 ro = (g.invModel * vec4(rStart,1.0)).xyz;
+    vec3 rd = (normalize(g.invModel * vec4(rDir,0.0))).xyz;
 
     float sign=1.0;
 	if(sqrt(dot(ro,ro))<radius)
@@ -60,14 +85,15 @@ float intersectSphere(Object g, vec3 rStart, vec3 rDir, out float t,  out vec3 n
 	vec3 realOrigin = (g.model * vec4(0,0,0,1)).xyz;
 
     pos = realIntersectionPoint;
-	normal = sign*normalize((realIntersectionPoint - realOrigin));
+	// normal = sign * normalize(realIntersectionPoint - realOrigin);
+	normal = vec3(sign) * vec3( normalize((g.transInvModel * vec4((realIntersectionPoint - realOrigin), 0.0)).xyz) ); // fix normal with scale
 
     return length(rStart - realIntersectionPoint);
 }
 
 float intersectCube(Object g, vec3 rStart, vec3 rDir, out float t, out vec3 normal, out vec3 pos){
-    vec3 ro = (g.invmodel * vec4(rStart,1.0)).xyz;
-    vec3 rd = (normalize(g.invmodel * vec4(rDir,0.0))).xyz;
+    vec3 ro = (g.invModel * vec4(rStart,1.0)).xyz;
+    vec3 rd = (normalize(g.invModel * vec4(rDir,0.0))).xyz;
 
 
     Ray rt;
@@ -131,15 +157,15 @@ float intersectCube(Object g, vec3 rStart, vec3 rDir, out float t, out vec3 norm
     vec3 realIntersectionPoint = (g.model *  vec4(P, 1.0)).xyz;
 
     pos = realIntersectionPoint;
-    normal = sign * normalize((g.transinvmodel * vec4(normal,0.0)).xyz);
+    normal = sign * normalize((g.transInvModel * vec4(normal,0.0)).xyz);
     return length(rStart - realIntersectionPoint);
 }
 
 float intersectPlane(Object g, vec3 rStart, vec3 rDir, out float t,  out vec3 normal, out vec3 pos) {	//on xz plane, normal: +y
 	normal = vec3(0.0, 1.0, 0.0);
 
-    vec3 ro = (g.invmodel * vec4(rStart,1.0)).xyz;
-    vec3 rd = (normalize(g.invmodel * vec4(rDir,0.0))).xyz;
+    vec3 ro = (g.invModel * vec4(rStart,1.0)).xyz;
+    vec3 rd = (normalize(g.invModel * vec4(rDir,0.0))).xyz;
 
 	if(dot(rd, normal) >= 0.0 || rd.y == 0.0)
 		return -1.0;
@@ -158,14 +184,89 @@ float intersectPlane(Object g, vec3 rStart, vec3 rDir, out float t,  out vec3 no
 	vec3 realIntersectionPoint = (g.model *  vec4(intersectPoint, 1.0)).xyz;
     pos = realIntersectionPoint;
 
-	normal = normalize((g.transinvmodel * vec4(normal,0.0)).xyz);
+	normal = normalize((g.transInvModel * vec4(normal,0.0)).xyz);
 
 	return length(rStart - realIntersectionPoint);
 }
 
-bool intersectWorld(Ray r, inout Intersection intersect) {
-    float objAttributesTextureWidth = objAttributesTextureSize.x;
-    float objAttributesTextureHeight = objAttributesTextureSize.y;
+vec2 getObjAttributeTextureCoord(int SectionID){
+	float fix = mod(float(SectionID), objAttributesTextureWidth);
+	float fiy = floor(float(SectionID) / objAttributesTextureWidth);
+	return vec2(fix, fiy);
+}
+
+vec2 getMaterialAttributeTextureCoord(int SectionID){
+	float fix = mod(float(SectionID), materialAttributesWidth);
+	float fiy = floor(float(SectionID) / materialAttributesWidth);
+	return vec2(fix, fiy);
+}
+
+int getObjType(int objID){
+	vec2 coord = getObjAttributeTextureCoord(objID*objSectionsPerObj);
+	return int(texture2D(objAttributesTexture, vec2(coord.x/objAttributesTextureWidth,coord.y/objAttributesTextureHeight)).w);
+}
+
+vec3 getPos(int objID){
+	vec2 coord = getObjAttributeTextureCoord(objID*objSectionsPerObj);
+	return texture2D(objAttributesTexture, vec2(coord.x/objAttributesTextureWidth,coord.y/objAttributesTextureHeight)).xyz;
+}
+
+vec3 getScale(int objID){
+	vec2 coord = getObjAttributeTextureCoord(objID*objSectionsPerObj+1);
+	return texture2D(objAttributesTexture, vec2(coord.x/objAttributesTextureWidth,coord.y/objAttributesTextureHeight)).xyz;
+}
+
+vec3 getRotation(int objID){
+	vec2 coord = getObjAttributeTextureCoord(objID*objSectionsPerObj+2);
+	return texture2D(objAttributesTexture, vec2(coord.x/objAttributesTextureWidth,coord.y/objAttributesTextureHeight)).xyz;
+}
+
+int getMaterialID(int objID){
+	vec2 coord = getObjAttributeTextureCoord(objID*objSectionsPerObj+1);
+	return int(texture2D(objAttributesTexture, vec2(coord.x/objAttributesTextureWidth,coord.y/objAttributesTextureHeight)).w);
+}
+
+int getInverseNormal(int objID){
+	vec2 coord = getObjAttributeTextureCoord(objID*objSectionsPerObj+2);
+	return int(texture2D(objAttributesTexture, vec2(coord.x/objAttributesTextureWidth,coord.y/objAttributesTextureHeight)).w);
+}
+
+vec3 getColor(int materialID){
+	vec2 coord = getMaterialAttributeTextureCoord(materialID*materialSectionsPerMaterial);
+	return texture2D(materialAttributesTexture, vec2(coord.x/materialAttributesWidth,coord.y/materialAttributesHeight)).rgb;
+}
+
+int getReflective(int materialID){
+	vec2 coord = getMaterialAttributeTextureCoord(materialID*materialSectionsPerMaterial+1);
+	return int(texture2D(materialAttributesTexture, vec2(coord.x/materialAttributesWidth,coord.y/materialAttributesHeight)).x);
+}
+
+float getReflectivity(int materialID){
+	vec2 coord = getMaterialAttributeTextureCoord(materialID*materialSectionsPerMaterial+1);
+	return texture2D(materialAttributesTexture, vec2(coord.x/materialAttributesWidth,coord.y/materialAttributesHeight)).y;
+}
+
+int getRefractive(int materialID){
+	vec2 coord = getMaterialAttributeTextureCoord(materialID*materialSectionsPerMaterial+1);
+	return int(texture2D(materialAttributesTexture, vec2(coord.x/materialAttributesWidth,coord.y/materialAttributesHeight)).z);
+}
+
+float getIOR(int materialID){
+	vec2 coord = getMaterialAttributeTextureCoord(materialID*materialSectionsPerMaterial+1);
+	return max(texture2D(materialAttributesTexture, vec2(coord.x/materialAttributesWidth,coord.y/materialAttributesHeight)).w, 1.0);
+}
+
+int getEmittance(int materialID){
+	vec2 coord = getMaterialAttributeTextureCoord(materialID*materialSectionsPerMaterial+2);
+	return int(texture2D(materialAttributesTexture, vec2(coord.x/materialAttributesWidth,coord.y/materialAttributesHeight)).x);
+}
+
+int getSubsurfaceScatter(int materialID){
+	vec2 coord = getMaterialAttributeTextureCoord(materialID*materialSectionsPerMaterial+2);
+	return int(texture2D(materialAttributesTexture, vec2(coord.x/materialAttributesWidth,coord.y/materialAttributesHeight)).y);
+}
+
+bool intersectObjs(const int start, const int end, Ray r, inout Intersection intersect) {
 
 	float t;
 	float hitPointDistance = -1.0;
@@ -173,32 +274,36 @@ bool intersectWorld(Ray r, inout Intersection intersect) {
 	vec3 tempNormal = vec3(0);
 	vec3 tempIntersectionPoint = vec3(0);
 
-	for(int i =0;i<MAX_OBJ_NUM;i++){
-        if(i>=objNums)
-           break;
+	for(int it = 0; it<MAX_OBJ_NUM; it++){
+		int objID = start + it;
+		if(objID >= end) break;
 
         Object temp;
-        float fix = float(i);
+        float fix = float(objID);
         float fiy = 0.0;
 
-        temp.type = int(5.0 * texture2D(objAttributesTexture, vec2((7.0 * fix + 1.0)/objAttributesTextureWidth,fiy/objAttributesTextureHeight)).r);
-        mat4 modelview = mat4(1.0);
-        translate(modelview,20.0 * (texture2D(objAttributesTexture, vec2((7.0 * fix + 4.0)/objAttributesTextureWidth,fiy/objAttributesTextureHeight)).rgb-0.5));
-        vec3 rotv =  texture2D(objAttributesTexture, vec2((7.0 * fix + 5.0)/objAttributesTextureWidth,fiy/objAttributesTextureHeight)).rgb;
-        rotateX(modelview,360.0 * PI / 180.0 * rotv.x);
-        rotateY(modelview,360.0 * PI / 180.0 * rotv.y);
-        rotateZ(modelview,360.0 * PI / 180.0 * rotv.z);
-        scale(modelview,10.0 * texture2D(objAttributesTexture, vec2((7.0 * fix + 6.0)/objAttributesTextureWidth,fiy/objAttributesTextureHeight)).rgb);
-        temp.model = modelview;
-        temp.invmodel = inversemat(temp.model);
-        temp.transinvmodel = transposemat(temp.invmodel);
+//        temp.objType = int(texture2D(objAttributesTexture, vec2((3.0 * fix)/objAttributesTextureWidth,fiy/objAttributesTextureHeight)).w);
+		temp.objType = getObjType(objID);
+
+		mat4 modelMat = mat4(1.0);
+        translate(modelMat, getPos(objID));
+        vec3 rotv = getRotation(objID);
+        rotateX(modelMat,PI / 180.0 * rotv.x);
+        rotateY(modelMat,PI / 180.0 * rotv.y);
+        rotateZ(modelMat,PI / 180.0 * rotv.z);
+        scale(modelMat, getScale(objID));
+
+        temp.model = modelMat;
+		temp.invModel = inversemat(temp.model);
+        temp.transInvModel = transposemat(temp.invModel);
 
 
-		if(temp.type == 0){
+
+		if(temp.objType == 0){
 
 			hitPointDistance = intersectSphere(temp, r.origin, r.direction, t, tempNormal, tempIntersectionPoint);
 
-		} else if(temp.type == 1) {
+		} else if(temp.objType == 1) {
 
 		    hitPointDistance = intersectPlane(temp, r.origin, r.direction, t, tempNormal, tempIntersectionPoint);
 
@@ -208,23 +313,28 @@ bool intersectWorld(Ray r, inout Intersection intersect) {
 
         }
 
+		temp.inverseNormal = getInverseNormal(objID);
+
+		if(temp.inverseNormal > 0)
+			tempNormal = -tempNormal;
 
 		if(hitPointDistance > 0.0 && hitPointDistance < closestIntersectionDistance){
-                temp.color = texture2D(objAttributesTexture, vec2((7.0 * fix)/objAttributesTextureWidth,0.0/objAttributesTextureHeight)).rgb;
-                //temp.textureType = int(5.0 * texture2D(objAttributesTexture, vec2((7.0 * fix + 1.0)/attw,fiy/atth)).g);
+			int materialID = getMaterialID(objID);
 
-                temp.reflective = int(1.0 * texture2D(objAttributesTexture, vec2((7.0 * fix + 2.0)/objAttributesTextureWidth,fiy/objAttributesTextureHeight)).r);
-                temp.refractive = int(1.0 * texture2D(objAttributesTexture, vec2((7.0 * fix + 2.0)/objAttributesTextureWidth,fiy/objAttributesTextureHeight)).g);
-                temp.reflectivity = texture2D(objAttributesTexture, vec2((7.0 * fix + 2.0)/objAttributesTextureWidth,fiy/objAttributesTextureHeight)).b;
+			temp.color = getColor(materialID);
 
-                temp.IOR = max(3.0 * texture2D(objAttributesTexture, vec2((7.0 * fix + 3.0)/objAttributesTextureWidth,fiy/objAttributesTextureHeight)).r, 1.0);
-                temp.subsurfaceScatter = int(texture2D(objAttributesTexture, vec2((7.0 * fix + 3.0)/objAttributesTextureWidth,fiy/objAttributesTextureHeight)).g);
-                temp.emittance = int(25.0 * texture2D(objAttributesTexture, vec2((7.0 * fix + 3.0)/objAttributesTextureWidth,fiy/objAttributesTextureHeight)).b);
+			temp.reflective = getReflective(materialID);
+			temp.reflectivity = getReflectivity(materialID);
+			temp.refractive = getRefractive(materialID);
+			temp.IOR = getIOR(materialID);
 
-				closestIntersectionDistance = hitPointDistance;
-                intersect.intersectPos = tempIntersectionPoint;
-                intersect.intersectNormal = tempNormal;
-				intersect.intersectObj = temp;
+			temp.emittance = getEmittance(materialID);
+			temp.subsurfaceScatter = getSubsurfaceScatter(materialID);
+
+			closestIntersectionDistance = hitPointDistance;
+			intersect.intersectPos = tempIntersectionPoint;
+			intersect.intersectNormal = tempNormal;
+			intersect.intersectObj = temp;
 		}
 	}
 
@@ -232,6 +342,82 @@ bool intersectWorld(Ray r, inout Intersection intersect) {
 		return true;
 	else
 		return false;
+}
+
+vec2 getBVHAttributeTextureCoord(int bvhSectionID){
+	float fix = mod(float(bvhSectionID), bvhsAttributesTextureWidth);
+	float fiy = floor(float(bvhSectionID) / bvhsAttributesTextureWidth);
+	return vec2(fix, fiy);
+}
+
+vec3 getMin(int bvhNodeID){
+	vec2 coord = getBVHAttributeTextureCoord(bvhNodeID*bvhsSectionsPerNode);
+	return texture2D(bvhsAttributesTexture, vec2(coord.x/bvhsAttributesTextureWidth,coord.y/bvhsAttributesTextureHeight)).xyz;
+}
+
+vec3 getMax(int bvhNodeID){
+	vec2 coord = getBVHAttributeTextureCoord(bvhNodeID*bvhsSectionsPerNode+1);
+	return texture2D(bvhsAttributesTexture, vec2(coord.x/bvhsAttributesTextureWidth,coord.y/bvhsAttributesTextureHeight)).xyz;
+}
+
+vec2 getChildren(int bvhNodeID){
+	vec2 coord = getBVHAttributeTextureCoord(bvhNodeID*bvhsSectionsPerNode+2);
+	return texture2D(bvhsAttributesTexture, vec2(coord.x/bvhsAttributesTextureWidth,coord.y/bvhsAttributesTextureHeight)).xy;
+}
+
+vec2 getElementIDMap(int bvhNodeID){
+	vec2 coord = getBVHAttributeTextureCoord(bvhNodeID*bvhsSectionsPerNode+2);
+	return texture2D(bvhsAttributesTexture, vec2(coord.x/bvhsAttributesTextureWidth,coord.y/bvhsAttributesTextureHeight)).zw;
+}
+
+bool intersectAABB(Ray ray, vec3 minAABB, vec3 maxAABB, inout float tmin, inout float tmax){
+
+	vec3 invDir = 1.0 / ray.direction;
+	vec3 t0s = (minAABB - ray.origin) * invDir;
+	vec3 t1s = (maxAABB - ray.origin) * invDir;
+	vec3 tsmaller = min(t0s, t1s);
+	vec3 tbigger = max(t0s, t1s);
+	tmin = max(max(tsmaller.x, tsmaller.y), tsmaller.z);
+	tmax = min(min(tbigger.x, tbigger.y), tbigger.z);
+	return tmin <= tmax;
+}
+
+bool intersectRootBVH(int rootBVHNodeID, inout Ray ray, inout Intersection intersect){
+
+//	float tmin, tmax;
+//    int stack[64];
+//    int stackTop = 0;
+//    stack[stackTop] = rootBVHNodeID;
+//
+//    while(stackTop >= 0) {
+//        int nodeID = stack[stackTop--];
+//        vec3 minAABB = getMin(nodeID);
+//        vec3 maxAABB = getMax(nodeID);
+//
+//        if(intersectAABB(ray, minAABB, maxAABB, tmin, tmax)) {
+//            vec2 children = getChildren(nodeID);
+//            int leftChild = int(children.x);
+//            int rightChild = int(children.y);
+//
+//            if(leftChild >= 0) {
+//                stack[++stackTop] = leftChild;
+//            }
+//
+//            if(rightChild >= 0) {
+//                stack[++stackTop] = rightChild;
+//            }
+//        }
+//    }
+
+//	int ptr = 0;
+//
+//	while(ptr>-1 && ptr<60){
+//
+//		ptr++;
+//	}
+
+//    return intersect.t < intersect.tMax;
+	return true;
 }
 
 const int depth = 5;
@@ -250,7 +436,7 @@ vec3 pathTrace(inout Ray ray, inout vec3 outColor){
 		Intersection intersect;
         float seed = time + float(i);
 
-		if (intersectWorld(ray, intersect)) {
+		if (intersectObjs(0, 0+objNums, ray, intersect)) {
 
 			// 光源物体
 			if(intersect.intersectObj.emittance > 0){
@@ -361,18 +547,19 @@ void main(void){
 
     if(enableSSAA>0){ //jitter
 		float r1 = sin(randOnVec3WithNoiseAndSeed(initRayDirection, ray.direction*vec3(12.9898, 78.233, 151.7182), time));
-		float r2 = cos(randOnVec3WithNoiseAndSeed(initRayDirection, ray.direction*vec3(63.7264, 10.873, 623.6736), time + 1.0));
-        float u = r1/2.0/displayBufferTextureSize.r;
-        float v = r2/2.0/displayBufferTextureSize.g;
+		float r2 = cos(randOnVec3WithNoiseAndSeed(initRayDirection, ray.direction*vec3(63.7264, 10.873, 623.6736), time));
+        float u = 2.0*r1/displayBufferTextureWidth;
+        float v = 2.0*r2/displayBufferTextureHeight;
         initPixelVec += vec3(u,v,0.0);
         ray.direction = normalize( initPixelVec - cameraPos);
-    }
+	}
 
 	vec3 finalColor = vec3(0.0);
 
 	pathTrace(ray, finalColor); // path tracing
 
-	vec3 previousColor = texture2D(displayBufferTexture, vec2(gl_FragCoord.x / displayBufferTextureSize.x,gl_FragCoord.y / displayBufferTextureSize.y) ).rgb;
+	vec3 previousColor = texture2D(displayBufferTexture, vec2(gl_FragCoord.x / displayBufferTextureWidth,gl_FragCoord.y / displayBufferTextureHeight) ).rgb;
 	gl_FragColor = vec4(mix( finalColor/5.0, previousColor, iterations / ( iterations + 1.0 )), 1.0);
 
+	// gl_FragColor = texture2D(elementIDMapAttributesTexture, vec2(gl_FragCoord.x / displayBufferTextureSize.x,gl_FragCoord.y / displayBufferTextureSize.y) ).rgba;
 }

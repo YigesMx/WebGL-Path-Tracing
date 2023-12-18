@@ -86,7 +86,7 @@ function handleMouseMove(event) {
     lastMouseX = newX;
     lastMouseY = newY;
 
-    iterations = 0;
+    resetIterations();
 }
 
 function handleKeyDown(event){

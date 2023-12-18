@@ -20,15 +20,6 @@ var frameBuffer; //Frame Buffer
 
 // vars
 
-//bool for SSAA
-var enableSSAA = 0;
-
-//objects attributes texture
-//width and height must be pow(2,n)
-var objAttributesWidth = 1024;  //width
-var objAttributesHeight = 2; //height
-var objAttributesTextureData = new Uint8Array(objAttributesWidth * objAttributesHeight * 4);
-var objAttributesTexture;
 
 // locations
 
@@ -42,11 +33,34 @@ var pt_invVP_uniformLocation;
 var pt_objNums_uniformLocation;
 var pt_time_uniformLocation;
 var pt_iterations_uniformLocation;
-var pt_displayBuffer_textureLocation;
-var pt_objAttributes_textureLocation;
-var pt_displayBufferTextureSize_uniformLocation;
-var pt_objAttributesTextureSize_uniformLocation;
+
+//bool for SSAA
+var enableSSAA = 0;
 var pt_enableSSAA_uniformLocation;
+
+var pt_displayBuffer_textureLocation;
+var pt_displayBufferTextureSize_uniformLocation;
+
+var objAttributesTexture;
+var pt_objAttributes_textureLocation;
+var pt_objAttributesTextureSize_uniformLocation;
+var pt_objSectionsPerObj_uniformLocation;
+
+var materialAttributesTexture;
+var pt_materialAttributes_textureLocation;
+var pt_materialAttributesTextureSize_uniformLocation;
+var pt_materialSectionsPerMaterial_uniformLocation;
+
+var pt_rootBVH_uniformLocation;
+
+var bvhsAttributesTexture;
+var pt_bvhsAttributes_textureLocation;
+var pt_bvhsAttributesTextureSize_uniformLocation;
+var pt_bvhsSectionsPerNode_uniformLocation;
+
+var elementIDMapAttributesTexture;
+var pt_elementIDMapAttributes_textureLocation;
+var pt_elementIDMapAttributesTextureSize_uniformLocation;
 
 //===== display shader =====
 var displayShaderProgram;
@@ -57,6 +71,8 @@ var time = 0;
 // locations
 var display_vertexPos_attributeLocation;
 var display_displayBuffer_textureLocation;
+
+var shaderReady = false;
 
 //===== functions =====
 function resize() {
@@ -122,6 +138,35 @@ function initBuffers() {
 	gl.bindTexture(gl.TEXTURE_2D, objAttributesTexture);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+	gl.bindTexture(gl.TEXTURE_2D, null);
+
+	// 创建一个纹理，用于存放材质属性
+	materialAttributesTexture = gl.createTexture();
+	gl.bindTexture(gl.TEXTURE_2D, materialAttributesTexture);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+	gl.bindTexture(gl.TEXTURE_2D, null);
+
+	// 创建一个纹理，用于存放 BVHs 属性
+	bvhsAttributesTexture = gl.createTexture();
+	gl.bindTexture(gl.TEXTURE_2D, bvhsAttributesTexture);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+	gl.bindTexture(gl.TEXTURE_2D, null);
+
+	// 创建一个纹理，用于存放 elementIDMap 属性
+	elementIDMapAttributesTexture = gl.createTexture();
+	gl.bindTexture(gl.TEXTURE_2D, elementIDMapAttributesTexture);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 	gl.bindTexture(gl.TEXTURE_2D, null);
 }
 
@@ -148,10 +193,27 @@ function initializeShader() {
         pt_time_uniformLocation = gl.getUniformLocation(ptShaderProgram, "time");
         pt_iterations_uniformLocation = gl.getUniformLocation(ptShaderProgram, "iterations");
         pt_objNums_uniformLocation = gl.getUniformLocation(ptShaderProgram, "objNums");
+
         pt_displayBuffer_textureLocation = gl.getUniformLocation(ptShaderProgram, "displayBufferTexture");
-        pt_objAttributes_textureLocation = gl.getUniformLocation(ptShaderProgram, "objAttributesTexture");
         pt_displayBufferTextureSize_uniformLocation = gl.getUniformLocation(ptShaderProgram, "displayBufferTextureSize");
+
+        pt_objAttributes_textureLocation = gl.getUniformLocation(ptShaderProgram, "objAttributesTexture");
         pt_objAttributesTextureSize_uniformLocation = gl.getUniformLocation(ptShaderProgram, "objAttributesTextureSize");
+		pt_objSectionsPerObj_uniformLocation = gl.getUniformLocation(ptShaderProgram, "objSectionsPerObj");
+
+		pt_materialAttributes_textureLocation = gl.getUniformLocation(ptShaderProgram, "materialAttributesTexture");
+		pt_materialAttributesTextureSize_uniformLocation = gl.getUniformLocation(ptShaderProgram, "materialAttributesTextureSize");
+		pt_materialSectionsPerMaterial_uniformLocation = gl.getUniformLocation(ptShaderProgram, "materialSectionsPerMaterial");
+
+		pt_rootBVH_uniformLocation = gl.getUniformLocation(ptShaderProgram, "rootBVH");
+
+		pt_bvhsAttributes_textureLocation = gl.getUniformLocation(ptShaderProgram, "bvhsAttributesTexture");
+		pt_bvhsAttributesTextureSize_uniformLocation = gl.getUniformLocation(ptShaderProgram, "bvhsAttributesTextureSize");
+		pt_bvhsSectionsPerNode_uniformLocation = gl.getUniformLocation(ptShaderProgram, "bvhsSectionsPerNode");
+
+		pt_elementIDMapAttributes_textureLocation = gl.getUniformLocation(ptShaderProgram, "elementIDMapAttributesTexture");
+		pt_elementIDMapAttributesTextureSize_uniformLocation = gl.getUniformLocation(ptShaderProgram, "elementIDMapAttributesTextureSize");
+
         pt_enableSSAA_uniformLocation = gl.getUniformLocation(ptShaderProgram, "enableSSAA");
 
 		//===== display shader =====
@@ -160,10 +222,19 @@ function initializeShader() {
 		display_vertexPos_attributeLocation = gl.getAttribLocation(displayShaderProgram, 'vertexPos');
 		gl.enableVertexAttribArray(display_vertexPos_attributeLocation);
 		display_displayBuffer_textureLocation = gl.getUniformLocation(displayShaderProgram, "displayBufferTexture");
+
+		// ready
+		shaderReady = true;
+		console.log(shaderReady)
     });
 }
 
 function render_loop() {
+
+	window.requestAnimFrame(render_loop);
+
+	if(!shaderReady)
+		return;
 
 	if (stats)
 		stats.update();
@@ -194,22 +265,52 @@ function render_loop() {
 		gl.uniform3f(pt_cameraPos_uniformLocation, eye.x, eye.y, eye.z);
 		gl.uniform1f(pt_time_uniformLocation, time);
 		gl.uniform1f(pt_iterations_uniformLocation, iterations);
-		gl.uniform1i(pt_objNums_uniformLocation, objData.length);
+		gl.uniform1i(pt_objNums_uniformLocation, scene.objs.length);
 		gl.uniform1i(pt_enableSSAA_uniformLocation, enableSSAA);
-		//Added for texture size
-		gl.uniform2f(pt_displayBufferTextureSize_uniformLocation, canvas.width,canvas.height);
-		gl.uniform2f(pt_objAttributesTextureSize_uniformLocation, objAttributesWidth, objAttributesHeight);
 
+
+		gl.uniform2f(pt_displayBufferTextureSize_uniformLocation, canvas.width,canvas.height);
 		gl.activeTexture(gl.TEXTURE0);
 		gl.bindTexture(gl.TEXTURE_2D, displayBufferTextures[0]);
 		gl.uniform1i(pt_displayBuffer_textureLocation, 0);
 
-
-		gl.activeTexture(gl.TEXTURE1);  //attributes for objects
+		// obj
+		gl.uniform2f(pt_objAttributesTextureSize_uniformLocation, Scene.objAttributesWidth, Scene.objAttributesHeight);
+		gl.activeTexture(gl.TEXTURE1);  //attributes for objs
 		gl.bindTexture(gl.TEXTURE_2D, objAttributesTexture);
-		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, objAttributesWidth, objAttributesHeight, 0, gl.RGBA, gl.UNSIGNED_BYTE, objAttributesTextureData);
+		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, Scene.objAttributesWidth, Scene.objAttributesHeight, 0, gl.RGBA, gl.FLOAT, scene.objAttributesTextureData);
 		gl.uniform1i(pt_objAttributes_textureLocation, 1);
 
+		gl.uniform1i(pt_objSectionsPerObj_uniformLocation, Scene.objSectionsPerObj);
+		// end obj
+
+		// material
+		gl.uniform2f(pt_materialAttributesTextureSize_uniformLocation, Scene.materialAttributesWidth, Scene.materialAttributesHeight);
+		gl.activeTexture(gl.TEXTURE2);  //attributes for materials
+		gl.bindTexture(gl.TEXTURE_2D, materialAttributesTexture);
+		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, Scene.materialAttributesWidth, Scene.materialAttributesHeight, 0, gl.RGBA, gl.FLOAT, scene.materialAttributesTextureData);
+		gl.uniform1i(pt_materialAttributes_textureLocation, 2);
+
+		gl.uniform1i(pt_materialSectionsPerMaterial_uniformLocation, Scene.materialSectionsPerMaterial);
+		// end material
+
+		// bvh
+		gl.uniform1i(pt_rootBVH_uniformLocation, scene.bvhsManager.rootBVH/4);
+
+		gl.uniform2f(pt_bvhsAttributesTextureSize_uniformLocation, BVHs.bvhsAttributesWidth, BVHs.bvhsAttributesHeight);
+		gl.activeTexture(gl.TEXTURE3);  //attributes for BVHs
+		gl.bindTexture(gl.TEXTURE_2D, bvhsAttributesTexture);
+		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, BVHs.bvhsAttributesWidth, BVHs.bvhsAttributesHeight, 0, gl.RGBA, gl.FLOAT, scene.bvhsManager.bvhsAttributesTextureData);
+		gl.uniform1i(pt_bvhsAttributes_textureLocation, 3);
+
+		gl.uniform1i(pt_bvhsSectionsPerNode_uniformLocation, BVHs.bvhsSectionsPerNode);
+
+		gl.uniform2f(pt_elementIDMapAttributesTextureSize_uniformLocation, BVHs.elementIDMapAttributesWidth, BVHs.elementIDMapAttributesHeight);
+		gl.activeTexture(gl.TEXTURE4);  //attributes for elementIDMap
+		gl.bindTexture(gl.TEXTURE_2D, elementIDMapAttributesTexture);
+		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, BVHs.elementIDMapAttributesWidth, BVHs.elementIDMapAttributesHeight, 0, gl.RGBA, gl.FLOAT, scene.bvhsManager.elementIDMapAttributesTextureData);
+		gl.uniform1i(pt_elementIDMapAttributes_textureLocation, 4);
+		// end bvh
 
 		gl.bindBuffer(gl.ARRAY_BUFFER, displayVertexPositionBuffer);
 		gl.vertexAttribPointer(pt_vertexPos_attributeLocation, 2, gl.FLOAT, false, 0, 0);
@@ -235,11 +336,9 @@ function render_loop() {
 		gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
 		iterations++;
-		time++;
+		time+=7e-5;
 	
 	}
-
-	window.requestAnimFrame(render_loop);
 }
 
 function resetIterations() {

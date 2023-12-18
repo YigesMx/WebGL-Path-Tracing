@@ -1,32 +1,36 @@
 precision highp float;
 
-struct Ray{
+#ifndef PI
+#define PI 3.14159265358979323846264
+#endif
+
+struct Ray {
     vec3 origin;
     vec3 direction;
     float IOR; // index of refraction 即折射率
 };
 
-struct Object{
-    vec3 color;
-
-    int type;
-//int textureType;
-
-    int reflective;
-    int refractive;
-    float reflectivity;
-
-    float IOR; // indexOfRefraction
-    int subsurfaceScatter;
-    int emittance;
+struct Object {
+    int objType;
 
     mat4 model;
-    mat4 invmodel;
-    mat4 transinvmodel;
+    mat4 invModel;
+    mat4 transInvModel;
 
+    int inverseNormal;
+
+    vec3 color;
+
+    int reflective;
+    float reflectivity;
+    int refractive;
+    float IOR; // indexOfRefraction
+
+    int emittance;
+    int subsurfaceScatter;
 };
 
-struct Intersection{
+struct Intersection {
     vec3 intersectPos;
     vec3 intersectNormal;
     float intersectDistance;
@@ -34,8 +38,7 @@ struct Intersection{
 };
 
 /*Utility Functions*/
-void translate(inout mat4 origin,in vec3 dir)
-{
+void translate(inout mat4 origin,in vec3 dir) {
     mat4 trans = mat4(1.0,0.0,0.0,0.0,
     0.0,1.0,0.0,0.0,
     0.0,0.0,1.0,0.0,
@@ -43,8 +46,7 @@ void translate(inout mat4 origin,in vec3 dir)
     origin =  origin * trans;
 }
 
-void scale(inout mat4 origin,in vec3 scalev)
-{
+void scale(inout mat4 origin,in vec3 scalev) {
     mat4 scale = mat4(scalev.x,0.0,0.0,0.0,
     0.0,scalev.y,0.0,0.0,
     0.0,0.0,scalev.z,0.0,
@@ -101,8 +103,7 @@ void rotateZ (inout mat4 origin, in float angle) {
     return;
 }
 
-mat4 inversemat(in mat4 mat)
-{
+mat4 inversemat(in mat4 mat) {
     mat4 dest = mat4(1.0);
     float a00 = mat[0][0], a01 = mat[0][1], a02 = mat[0][2], a03 = mat[0][3],
     a10 = mat[1][0], a11 = mat[1][1], a12 = mat[1][2], a13 = mat[1][3],
@@ -132,8 +133,7 @@ mat4 inversemat(in mat4 mat)
     return dest;
 }
 
-mat4 transposemat(in mat4 mat)
-{
+mat4 transposemat(in mat4 mat) {
     mat4 dest = mat4(1.0);
     dest[0][0] = mat[0][0]; dest[0][1] = mat[1][0]; dest[0][2] = mat[2][0]; dest[0][3] = mat[3][0];
     dest[1][0] = mat[0][1]; dest[1][1] = mat[1][1]; dest[1][2] = mat[2][1]; dest[1][3] = mat[3][1];
@@ -148,15 +148,10 @@ float randOnVec3WithNoiseAndSeed(vec3 rVec3, vec3 noise, float seed) {
     return fract(sin(dot(rVec3 + seed, noise)) * 43758.5453 + seed);
 }
 
-highp float randOnVec2(vec2 rVec2)
-{
-    highp float a = 12.9898,b = 78.233,c = 43758.5453,dt= dot(rVec2.xy ,vec2(a,b)),sn= mod(dt,3.14);
+highp float randOnVec2(vec2 rVec2) {
+    highp float a = 12.9898,b = 78.233,c = 43758.5453,dt= dot(rVec2.xy ,vec2(a,b)),sn= mod(dt,PI);
     return fract(sin(sn) * c);
 }
-
-//highp float randOnVec2(vec2 rVec2){
-//    return fract(cos(rVec2.x * (12.9898) + rVec2. y * (4.1414)) * 43758.5453);
-//}
 
 // 返回值 [0.0f, 1.0f)
 //float rand_times = 0.0;
@@ -170,8 +165,8 @@ highp float randOnVec2(vec2 rVec2)
 //    return f;
 //}
 
-vec3 calculateRandomDirectionInHemisphere(vec3 normal, vec3 rVec3, float seed)
-{
+vec3 calculateRandomDirectionInHemisphere(vec3 normal, vec3 rVec3, float seed) {
+
     float u = randOnVec3WithNoiseAndSeed(rVec3, vec3(12.9898, 78.233, 151.7182), seed);
     float v = randOnVec3WithNoiseAndSeed(rVec3, vec3(63.7264, 10.873, 623.6736), seed);
 
@@ -223,21 +218,19 @@ Fresnel calculateFresnel(vec3 normal, vec3 incident, float incidentIOR, float tr
 }
 
 ///*For Subsurface Scattering  https://machinesdontcare.wordpress.com/tag/subsurface/ */
-float halfLambert(in vec3 vect1, in vec3 vect2)
-{
+float halfLambert(in vec3 vect1, in vec3 vect2) {
     float product = dot(vect1,vect2);
     return product * 0.5 + 0.5;
 }
 
-float blinnPhongSpecular(in vec3 normalVec, in vec3 lightVec, in float specPower)
-{
+float blinnPhongSpecular(in vec3 normalVec, in vec3 lightVec, in float specPower) {
     vec3 halfAngle = normalize(normalVec + lightVec);
     return pow(clamp(0.0,1.0,dot(normalVec,halfAngle)),specPower);
 }
 
 
-vec3 subScatterFS(in Intersection intersect,in float seed)
-{
+vec3 subScatterFS(in Intersection intersect,in float seed) {
+
     float RimScalar = 1.0;
     float MaterialThickness = 0.5;
     vec3 ExtinctionCoefficient = vec3(1.0,1.0,1.0);
