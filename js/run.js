@@ -185,7 +185,7 @@ function initDefaultScene() {
 	scene.addObj(new Obj(
 		'sphere white diffuse',
 		'sphere',
-		[-2.0, 0.0, 0.0],
+		[-2.0, 0.0, -1.0],
 		[1.8, 1.8, 1.8],
 		[0.0, 0.0, 0.0],
 		0
@@ -205,7 +205,7 @@ function initDefaultScene() {
 	scene.addObj(new Obj(
 		'sphere glass',
 		'sphere',
-		[2.0, 0.0, 0.0],
+		[2.0, 0.0, 1.0],
 		[1.8, 1.8, 1.8],
 		[0.0, 0.0, 0.0],
 		6

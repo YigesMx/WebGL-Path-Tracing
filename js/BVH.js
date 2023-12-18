@@ -147,7 +147,7 @@ class BVHs {
         return aabb;
     }
 
-    timeTri= 1.0;
+    timeTri= 2.0;
     timeAABB = 1.0;
 
     _newNode(){
@@ -242,9 +242,11 @@ class BVHs {
             let nodeID = queFront[0];
             let depth = queFront[1];
 
-            console.log('depth: ' + depth + ' nodeID: ' + nodeID/BVHs.bvhsNodeSize);
+            console.log('=====> nodeID: ' + nodeID)
+            console.log('depth: ' + depth);
             console.log('leftChild: ' + this.getLeftChild(nodeID) + ' rightChild: ' + this.getRightChild(nodeID));
             console.log(this.getAABB(nodeID));
+            console.log('location: ' + this.getElementIDMapLocation(nodeID) + ' length: ' + this.getElementIDMapLength(nodeID));
             console.log(this.getElementIDMap(this.getElementIDMapLocation(nodeID), this.getElementIDMapLength(nodeID)));
 
 

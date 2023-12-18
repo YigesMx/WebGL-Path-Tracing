@@ -1,6 +1,8 @@
 precision highp float;
 
 #define PI 3.14159265358979323846264
+#define INF 2147483647
+#define INF_F 2147483647.0
 
 uniform float time;
 uniform int objNums;
@@ -197,12 +199,6 @@ vec2 getObjAttributeTextureCoord(int SectionID){
 	return vec2(fix, fiy);
 }
 
-vec2 getMaterialAttributeTextureCoord(int SectionID){
-	float fix = mod(float(SectionID), materialAttributesWidth);
-	float fiy = floor(float(SectionID) / materialAttributesWidth);
-	return vec2(fix, fiy);
-}
-
 int getObjType(int objID){
 	vec2 coord = getObjAttributeTextureCoord(objID*objSectionsPerObj);
 	return int(texture(objAttributesTexture, vec2(coord.x/objAttributesTextureWidth,coord.y/objAttributesTextureHeight)).w);
@@ -233,6 +229,11 @@ int getInverseNormal(int objID){
 	return int(texture(objAttributesTexture, vec2(coord.x/objAttributesTextureWidth,coord.y/objAttributesTextureHeight)).w);
 }
 
+vec2 getMaterialAttributeTextureCoord(int SectionID){
+	float fix = mod(float(SectionID), materialAttributesWidth);
+	float fiy = floor(float(SectionID) / materialAttributesWidth);
+	return vec2(fix, fiy);
+}
 vec3 getColor(int materialID){
 	vec2 coord = getMaterialAttributeTextureCoord(materialID*materialSectionsPerMaterial);
 	return texture(materialAttributesTexture, vec2(coord.x/materialAttributesWidth,coord.y/materialAttributesHeight)).rgb;
@@ -268,57 +269,152 @@ int getSubsurfaceScatter(int materialID){
 	return int(texture(materialAttributesTexture, vec2(coord.x/materialAttributesWidth,coord.y/materialAttributesHeight)).y);
 }
 
-bool intersectObjs(const int start, const int end, Ray r, inout Intersection intersect) {
+//bool intersectObjs(const int start, const int end, Ray ray, inout Intersection intersect) {
+//
+//	float t;
+//	float hitPointDistance = -1.0;
+//	float closestIntersectionDistance = INF_F;
+//	vec3 tempNormal = vec3(0);
+//	vec3 tempIntersectionPoint = vec3(0);
+//
+////	for(int it = 0; it<MAX_OBJ_NUM; it++){ // for glsl es 2.0
+////		int objID = start + it;
+////		if(objID >= end) break;
+//	for(int objID = start; objID<end; objID++){
+//
+//        Object temp;
+//        float fix = float(objID);
+//        float fiy = 0.0;
+//
+//		temp.objType = getObjType(objID);
+//
+//		mat4 modelMat = mat4(1.0);
+//        translate(modelMat, getPos(objID));
+//        vec3 rotv = getRotation(objID);
+//        rotateX(modelMat,PI / 180.0 * rotv.x);
+//        rotateY(modelMat,PI / 180.0 * rotv.y);
+//        rotateZ(modelMat,PI / 180.0 * rotv.z);
+//        scale(modelMat, getScale(objID));
+//
+//        temp.model = modelMat;
+//		temp.invModel = inversemat(temp.model);
+//        temp.transInvModel = transposemat(temp.invModel);
+//
+//		if(temp.objType == 0){
+//
+//			hitPointDistance = intersectSphere(temp, ray.origin, ray.direction, t, tempNormal, tempIntersectionPoint);
+//
+//		} else if(temp.objType == 1) {
+//
+//		    hitPointDistance = intersectPlane(temp, ray.origin, ray.direction, t, tempNormal, tempIntersectionPoint);
+//
+//        } else {
+//
+//		    hitPointDistance = intersectCube(temp, ray.origin, ray.direction, t, tempNormal, tempIntersectionPoint);
+//
+//        }
+//
+//		temp.inverseNormal = getInverseNormal(objID);
+//
+//		if(temp.inverseNormal > 0)
+//			tempNormal = -tempNormal;
+//
+//		if(hitPointDistance > 0.0 && hitPointDistance < closestIntersectionDistance){
+//			int materialID = getMaterialID(objID);
+//
+//			temp.color = getColor(materialID);
+//
+//			temp.reflective = getReflective(materialID);
+//			temp.reflectivity = getReflectivity(materialID);
+//			temp.refractive = getRefractive(materialID);
+//			temp.IOR = getIOR(materialID);
+//
+//			temp.emittance = getEmittance(materialID);
+//			temp.subsurfaceScatter = getSubsurfaceScatter(materialID);
+//
+//			closestIntersectionDistance = hitPointDistance;
+//			intersect.intersectDistance = hitPointDistance;
+//			intersect.intersectPos = tempIntersectionPoint;
+//			intersect.intersectNormal = tempNormal;
+//			intersect.intersectObj = temp;
+//		}
+//	}
+//
+//	if (closestIntersectionDistance > -1.0)
+//		return true;
+//	else
+//		return false;
+//}
+
+vec2 getElementIDMapTextureCoord(int elementIDMapLocation){
+	int elementIDMapSectionID = elementIDMapLocation / 4;
+	float fix = mod(float(elementIDMapSectionID), elementIDMapAttributesTextureWidth);
+	float fiy = floor(float(elementIDMapSectionID) / elementIDMapAttributesTextureWidth);
+	return vec2(fix, fiy);
+}
+
+int getElementID(int elementIDMapLocation){
+	vec2 coord = getElementIDMapTextureCoord(elementIDMapLocation);
+	int bit = elementIDMapLocation % 4;
+	if(bit == 0)
+		return int(texture(elementIDMapAttributesTexture, vec2(coord.x/elementIDMapAttributesTextureWidth,coord.y/elementIDMapAttributesTextureHeight)).x);
+	else if(bit == 1)
+		return int(texture(elementIDMapAttributesTexture, vec2(coord.x/elementIDMapAttributesTextureWidth,coord.y/elementIDMapAttributesTextureHeight)).y);
+	else if(bit == 2)
+		return int(texture(elementIDMapAttributesTexture, vec2(coord.x/elementIDMapAttributesTextureWidth,coord.y/elementIDMapAttributesTextureHeight)).z);
+	else
+		return int(texture(elementIDMapAttributesTexture, vec2(coord.x/elementIDMapAttributesTextureWidth,coord.y/elementIDMapAttributesTextureHeight)).w);
+}
+
+bool intersectObjs(const int elementStart, const int elementEnd, Ray ray, inout Intersection intersect) {
 
 	float t;
 	float hitPointDistance = -1.0;
-	float closestIntersectionDistance = 100000.0;
+	float closestIntersectionDistance = INF_F;
 	vec3 tempNormal = vec3(0);
 	vec3 tempIntersectionPoint = vec3(0);
 
-	for(int it = 0; it<MAX_OBJ_NUM; it++){
-		int objID = start + it;
-		if(objID >= end) break;
+	//	for(int it = 0; it<MAX_OBJ_NUM; it++){ // for glsl es 2.0
+	//		int objID = start + it;
+	//		if(objID >= end) break;
+	for(int element = elementStart; element<elementEnd; element++){
 
-        Object temp;
-        float fix = float(objID);
-        float fiy = 0.0;
+		Object temp;
 
-//        temp.objType = int(texture(objAttributesTexture, vec2((3.0 * fix)/objAttributesTextureWidth,fiy/objAttributesTextureHeight)).w);
+		int objID = getElementID(element);
+
 		temp.objType = getObjType(objID);
 
 		mat4 modelMat = mat4(1.0);
-        translate(modelMat, getPos(objID));
-        vec3 rotv = getRotation(objID);
-        rotateX(modelMat,PI / 180.0 * rotv.x);
-        rotateY(modelMat,PI / 180.0 * rotv.y);
-        rotateZ(modelMat,PI / 180.0 * rotv.z);
-        scale(modelMat, getScale(objID));
+		translate(modelMat, getPos(objID));
+		vec3 rotv = getRotation(objID);
+		rotateX(modelMat,PI / 180.0 * rotv.x);
+		rotateY(modelMat,PI / 180.0 * rotv.y);
+		rotateZ(modelMat,PI / 180.0 * rotv.z);
+		scale(modelMat, getScale(objID));
 
-        temp.model = modelMat;
+		temp.model = modelMat;
 		temp.invModel = inversemat(temp.model);
-        temp.transInvModel = transposemat(temp.invModel);
-
-
+		temp.transInvModel = transposemat(temp.invModel);
 
 		if(temp.objType == 0){
 
-			hitPointDistance = intersectSphere(temp, r.origin, r.direction, t, tempNormal, tempIntersectionPoint);
+			hitPointDistance = intersectSphere(temp, ray.origin, ray.direction, t, tempNormal, tempIntersectionPoint);
 
 		} else if(temp.objType == 1) {
 
-		    hitPointDistance = intersectPlane(temp, r.origin, r.direction, t, tempNormal, tempIntersectionPoint);
+			hitPointDistance = intersectPlane(temp, ray.origin, ray.direction, t, tempNormal, tempIntersectionPoint);
 
-        } else {
+		} else {
 
-		    hitPointDistance = intersectCube(temp, r.origin, r.direction, t, tempNormal, tempIntersectionPoint);
+			hitPointDistance = intersectCube(temp, ray.origin, ray.direction, t, tempNormal, tempIntersectionPoint);
 
-        }
+		}
 
 		temp.inverseNormal = getInverseNormal(objID);
 
 		if(temp.inverseNormal > 0)
-			tempNormal = -tempNormal;
+		tempNormal = -tempNormal;
 
 		if(hitPointDistance > 0.0 && hitPointDistance < closestIntersectionDistance){
 			int materialID = getMaterialID(objID);
@@ -334,6 +430,7 @@ bool intersectObjs(const int start, const int end, Ray r, inout Intersection int
 			temp.subsurfaceScatter = getSubsurfaceScatter(materialID);
 
 			closestIntersectionDistance = hitPointDistance;
+			intersect.intersectDistance = hitPointDistance;
 			intersect.intersectPos = tempIntersectionPoint;
 			intersect.intersectNormal = tempNormal;
 			intersect.intersectObj = temp;
@@ -384,42 +481,61 @@ bool intersectAABB(Ray ray, vec3 minAABB, vec3 maxAABB, inout float tmin, inout 
 	return tmin <= tmax;
 }
 
-bool intersectRootBVH(int rootBVHNodeID, inout Ray ray, inout Intersection intersect){
+bool intersectRootBVH(int rootBVHNodeID, inout Ray ray, inout Intersection finalIntersect){
 
-//	float tmin, tmax;
-//    int stack[64];
-//    int stackTop = 0;
-//    stack[stackTop] = rootBVHNodeID;
-//
-//    while(stackTop >= 0) {
-//        int nodeID = stack[stackTop--];
-//        vec3 minAABB = getMin(nodeID);
-//        vec3 maxAABB = getMax(nodeID);
-//
-//        if(intersectAABB(ray, minAABB, maxAABB, tmin, tmax)) {
-//            vec2 children = getChildren(nodeID);
-//            int leftChild = int(children.x);
-//            int rightChild = int(children.y);
-//
-//            if(leftChild >= 0) {
-//                stack[++stackTop] = leftChild;
-//            }
-//
-//            if(rightChild >= 0) {
-//                stack[++stackTop] = rightChild;
-//            }
-//        }
-//    }
+	float tmin, tmax;
+    int stack[64];
+    int stackTop = -1;
+	float closestIntersectionDistance = INF_F;
 
-	int ptr = 0;
+    stack[++stackTop] = rootBVHNodeID;
 
-	while(ptr>-1 && ptr<60){
+//	Intersection intersect;
+//	intersectObjs(0, 11, ray, intersect);
+//	finalIntersect = intersect;
 
-		ptr++;
-	}
 
-//    return intersect.t < intersect.tMax;
-	return true;
+    while(stackTop >= 0) {
+        int nodeID = stack[stackTop--];
+        vec3 minAABB = getMin(nodeID);
+        vec3 maxAABB = getMax(nodeID);
+
+        if(intersectAABB(ray, minAABB, maxAABB, tmin, tmax)) {
+            vec2 children = getChildren(nodeID);
+            int leftChild = int(children.x);
+            int rightChild = int(children.y);
+
+			if(leftChild < 0 && rightChild < 0) {
+
+				int start = int(getElementIDMap(nodeID).x);
+				int end = start + int(getElementIDMap(nodeID).y);
+
+				Intersection intersect;
+				intersectObjs(start, end, ray, intersect);
+
+				if(intersect.intersectDistance > 0.0 && intersect.intersectDistance < closestIntersectionDistance){
+					closestIntersectionDistance = intersect.intersectDistance;
+					finalIntersect = intersect;
+				}
+
+			} else {
+
+				if(leftChild >= 0) {
+					stack[++stackTop] = leftChild;
+				}
+
+				if(rightChild >= 0) {
+					stack[++stackTop] = rightChild;
+				}
+			}
+
+        }
+    }
+
+	if (closestIntersectionDistance > -1.0)
+		return true;
+	else
+		return false;
 }
 
 const int depth = 5;
@@ -438,7 +554,8 @@ vec3 pathTrace(inout Ray ray, inout vec3 outColor){
 		Intersection intersect;
         float seed = time + float(i);
 
-		if (intersectObjs(0, 0+objNums, ray, intersect)) {
+//		if (intersectObjs(0, 0+objNums, ray, intersect)) {
+		if (intersectRootBVH(rootBVH, ray, intersect)) {
 
 			// 光源物体
 			if(intersect.intersectObj.emittance > 0){
@@ -550,8 +667,8 @@ void main(void){
     if(enableSSAA>0){ //jitter
 		float r1 = sin(randOnVec3WithNoiseAndSeed(initRayDirection, ray.direction*vec3(12.9898, 78.233, 151.7182), time));
 		float r2 = cos(randOnVec3WithNoiseAndSeed(initRayDirection, ray.direction*vec3(63.7264, 10.873, 623.6736), time));
-        float u = 2.0*r1/displayBufferTextureWidth;
-        float v = 2.0*r2/displayBufferTextureHeight;
+        float u = r1/displayBufferTextureWidth;
+        float v = r2/displayBufferTextureHeight;
         initPixelVec += vec3(u,v,0.0);
         ray.direction = normalize( initPixelVec - cameraPos);
 	}
@@ -563,5 +680,5 @@ void main(void){
 	vec3 previousColor = texture(displayBufferTexture, vec2(gl_FragCoord.x / displayBufferTextureWidth,gl_FragCoord.y / displayBufferTextureHeight) ).rgb;
 	fragColor = vec4(mix( finalColor/5.0, previousColor, iterations / ( iterations + 1.0 )), 1.0);
 
-	// fragColor = texture(elementIDMapAttributesTexture, vec2(gl_FragCoord.x / displayBufferTextureSize.x,gl_FragCoord.y / displayBufferTextureSize.y) ).rgba;
+	//fragColor = texture(bvhsAttributesTexture, vec2(gl_FragCoord.x / displayBufferTextureSize.x,gl_FragCoord.y / displayBufferTextureSize.y) ).rgba;
 }
