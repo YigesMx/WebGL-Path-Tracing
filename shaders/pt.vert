@@ -1,10 +1,12 @@
+#version 300 es
+
 precision highp float;
 
-attribute vec2 vertexPos;
+in vec2 vertexPos;
 uniform vec3 cameraPos;
 uniform mat4 invVP;
 
-varying vec3 initRayDirection;
+out vec3 initRayDirection;
 //varying vec2 texCoord;
 
 void main(void){

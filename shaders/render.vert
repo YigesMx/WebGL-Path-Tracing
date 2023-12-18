@@ -1,7 +1,9 @@
+#version 300 es
+
 precision highp float;
 
-attribute vec3 vertexPos;
-varying vec2 texCoord;
+in vec3 vertexPos;
+out vec2 texCoord;
 
 void main(void)
 {

@@ -1,9 +1,13 @@
+#version 300 es
+
 precision highp float;
 
 uniform sampler2D displayBufferTexture;
-varying vec2 texCoord;
+in vec2 texCoord;
+
+out vec4 fragColor;
 
 void main(void)
 {
-    gl_FragColor = texture2D(displayBufferTexture, texCoord);
+    fragColor = texture(displayBufferTexture, texCoord);
 }

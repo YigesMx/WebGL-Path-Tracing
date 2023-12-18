@@ -40,7 +40,9 @@ uniform vec2 elementIDMapAttributesTextureSize;
 #define elementIDMapAttributesTextureHeight elementIDMapAttributesTextureSize.y
 
 //varying vec2 texCoord;
-varying vec3 initRayDirection;
+in vec3 initRayDirection;
+
+out vec4 fragColor;
 
 const int MAX_OBJ_NUM = 30;
 
@@ -203,67 +205,67 @@ vec2 getMaterialAttributeTextureCoord(int SectionID){
 
 int getObjType(int objID){
 	vec2 coord = getObjAttributeTextureCoord(objID*objSectionsPerObj);
-	return int(texture2D(objAttributesTexture, vec2(coord.x/objAttributesTextureWidth,coord.y/objAttributesTextureHeight)).w);
+	return int(texture(objAttributesTexture, vec2(coord.x/objAttributesTextureWidth,coord.y/objAttributesTextureHeight)).w);
 }
 
 vec3 getPos(int objID){
 	vec2 coord = getObjAttributeTextureCoord(objID*objSectionsPerObj);
-	return texture2D(objAttributesTexture, vec2(coord.x/objAttributesTextureWidth,coord.y/objAttributesTextureHeight)).xyz;
+	return texture(objAttributesTexture, vec2(coord.x/objAttributesTextureWidth,coord.y/objAttributesTextureHeight)).xyz;
 }
 
 vec3 getScale(int objID){
 	vec2 coord = getObjAttributeTextureCoord(objID*objSectionsPerObj+1);
-	return texture2D(objAttributesTexture, vec2(coord.x/objAttributesTextureWidth,coord.y/objAttributesTextureHeight)).xyz;
+	return texture(objAttributesTexture, vec2(coord.x/objAttributesTextureWidth,coord.y/objAttributesTextureHeight)).xyz;
 }
 
 vec3 getRotation(int objID){
 	vec2 coord = getObjAttributeTextureCoord(objID*objSectionsPerObj+2);
-	return texture2D(objAttributesTexture, vec2(coord.x/objAttributesTextureWidth,coord.y/objAttributesTextureHeight)).xyz;
+	return texture(objAttributesTexture, vec2(coord.x/objAttributesTextureWidth,coord.y/objAttributesTextureHeight)).xyz;
 }
 
 int getMaterialID(int objID){
 	vec2 coord = getObjAttributeTextureCoord(objID*objSectionsPerObj+1);
-	return int(texture2D(objAttributesTexture, vec2(coord.x/objAttributesTextureWidth,coord.y/objAttributesTextureHeight)).w);
+	return int(texture(objAttributesTexture, vec2(coord.x/objAttributesTextureWidth,coord.y/objAttributesTextureHeight)).w);
 }
 
 int getInverseNormal(int objID){
 	vec2 coord = getObjAttributeTextureCoord(objID*objSectionsPerObj+2);
-	return int(texture2D(objAttributesTexture, vec2(coord.x/objAttributesTextureWidth,coord.y/objAttributesTextureHeight)).w);
+	return int(texture(objAttributesTexture, vec2(coord.x/objAttributesTextureWidth,coord.y/objAttributesTextureHeight)).w);
 }
 
 vec3 getColor(int materialID){
 	vec2 coord = getMaterialAttributeTextureCoord(materialID*materialSectionsPerMaterial);
-	return texture2D(materialAttributesTexture, vec2(coord.x/materialAttributesWidth,coord.y/materialAttributesHeight)).rgb;
+	return texture(materialAttributesTexture, vec2(coord.x/materialAttributesWidth,coord.y/materialAttributesHeight)).rgb;
 }
 
 int getReflective(int materialID){
 	vec2 coord = getMaterialAttributeTextureCoord(materialID*materialSectionsPerMaterial+1);
-	return int(texture2D(materialAttributesTexture, vec2(coord.x/materialAttributesWidth,coord.y/materialAttributesHeight)).x);
+	return int(texture(materialAttributesTexture, vec2(coord.x/materialAttributesWidth,coord.y/materialAttributesHeight)).x);
 }
 
 float getReflectivity(int materialID){
 	vec2 coord = getMaterialAttributeTextureCoord(materialID*materialSectionsPerMaterial+1);
-	return texture2D(materialAttributesTexture, vec2(coord.x/materialAttributesWidth,coord.y/materialAttributesHeight)).y;
+	return texture(materialAttributesTexture, vec2(coord.x/materialAttributesWidth,coord.y/materialAttributesHeight)).y;
 }
 
 int getRefractive(int materialID){
 	vec2 coord = getMaterialAttributeTextureCoord(materialID*materialSectionsPerMaterial+1);
-	return int(texture2D(materialAttributesTexture, vec2(coord.x/materialAttributesWidth,coord.y/materialAttributesHeight)).z);
+	return int(texture(materialAttributesTexture, vec2(coord.x/materialAttributesWidth,coord.y/materialAttributesHeight)).z);
 }
 
 float getIOR(int materialID){
 	vec2 coord = getMaterialAttributeTextureCoord(materialID*materialSectionsPerMaterial+1);
-	return max(texture2D(materialAttributesTexture, vec2(coord.x/materialAttributesWidth,coord.y/materialAttributesHeight)).w, 1.0);
+	return max(texture(materialAttributesTexture, vec2(coord.x/materialAttributesWidth,coord.y/materialAttributesHeight)).w, 1.0);
 }
 
 int getEmittance(int materialID){
 	vec2 coord = getMaterialAttributeTextureCoord(materialID*materialSectionsPerMaterial+2);
-	return int(texture2D(materialAttributesTexture, vec2(coord.x/materialAttributesWidth,coord.y/materialAttributesHeight)).x);
+	return int(texture(materialAttributesTexture, vec2(coord.x/materialAttributesWidth,coord.y/materialAttributesHeight)).x);
 }
 
 int getSubsurfaceScatter(int materialID){
 	vec2 coord = getMaterialAttributeTextureCoord(materialID*materialSectionsPerMaterial+2);
-	return int(texture2D(materialAttributesTexture, vec2(coord.x/materialAttributesWidth,coord.y/materialAttributesHeight)).y);
+	return int(texture(materialAttributesTexture, vec2(coord.x/materialAttributesWidth,coord.y/materialAttributesHeight)).y);
 }
 
 bool intersectObjs(const int start, const int end, Ray r, inout Intersection intersect) {
@@ -282,7 +284,7 @@ bool intersectObjs(const int start, const int end, Ray r, inout Intersection int
         float fix = float(objID);
         float fiy = 0.0;
 
-//        temp.objType = int(texture2D(objAttributesTexture, vec2((3.0 * fix)/objAttributesTextureWidth,fiy/objAttributesTextureHeight)).w);
+//        temp.objType = int(texture(objAttributesTexture, vec2((3.0 * fix)/objAttributesTextureWidth,fiy/objAttributesTextureHeight)).w);
 		temp.objType = getObjType(objID);
 
 		mat4 modelMat = mat4(1.0);
@@ -352,22 +354,22 @@ vec2 getBVHAttributeTextureCoord(int bvhSectionID){
 
 vec3 getMin(int bvhNodeID){
 	vec2 coord = getBVHAttributeTextureCoord(bvhNodeID*bvhsSectionsPerNode);
-	return texture2D(bvhsAttributesTexture, vec2(coord.x/bvhsAttributesTextureWidth,coord.y/bvhsAttributesTextureHeight)).xyz;
+	return texture(bvhsAttributesTexture, vec2(coord.x/bvhsAttributesTextureWidth,coord.y/bvhsAttributesTextureHeight)).xyz;
 }
 
 vec3 getMax(int bvhNodeID){
 	vec2 coord = getBVHAttributeTextureCoord(bvhNodeID*bvhsSectionsPerNode+1);
-	return texture2D(bvhsAttributesTexture, vec2(coord.x/bvhsAttributesTextureWidth,coord.y/bvhsAttributesTextureHeight)).xyz;
+	return texture(bvhsAttributesTexture, vec2(coord.x/bvhsAttributesTextureWidth,coord.y/bvhsAttributesTextureHeight)).xyz;
 }
 
 vec2 getChildren(int bvhNodeID){
 	vec2 coord = getBVHAttributeTextureCoord(bvhNodeID*bvhsSectionsPerNode+2);
-	return texture2D(bvhsAttributesTexture, vec2(coord.x/bvhsAttributesTextureWidth,coord.y/bvhsAttributesTextureHeight)).xy;
+	return texture(bvhsAttributesTexture, vec2(coord.x/bvhsAttributesTextureWidth,coord.y/bvhsAttributesTextureHeight)).xy;
 }
 
 vec2 getElementIDMap(int bvhNodeID){
 	vec2 coord = getBVHAttributeTextureCoord(bvhNodeID*bvhsSectionsPerNode+2);
-	return texture2D(bvhsAttributesTexture, vec2(coord.x/bvhsAttributesTextureWidth,coord.y/bvhsAttributesTextureHeight)).zw;
+	return texture(bvhsAttributesTexture, vec2(coord.x/bvhsAttributesTextureWidth,coord.y/bvhsAttributesTextureHeight)).zw;
 }
 
 bool intersectAABB(Ray ray, vec3 minAABB, vec3 maxAABB, inout float tmin, inout float tmax){
@@ -409,12 +411,12 @@ bool intersectRootBVH(int rootBVHNodeID, inout Ray ray, inout Intersection inter
 //        }
 //    }
 
-//	int ptr = 0;
-//
-//	while(ptr>-1 && ptr<60){
-//
-//		ptr++;
-//	}
+	int ptr = 0;
+
+	while(ptr>-1 && ptr<60){
+
+		ptr++;
+	}
 
 //    return intersect.t < intersect.tMax;
 	return true;
@@ -558,8 +560,8 @@ void main(void){
 
 	pathTrace(ray, finalColor); // path tracing
 
-	vec3 previousColor = texture2D(displayBufferTexture, vec2(gl_FragCoord.x / displayBufferTextureWidth,gl_FragCoord.y / displayBufferTextureHeight) ).rgb;
-	gl_FragColor = vec4(mix( finalColor/5.0, previousColor, iterations / ( iterations + 1.0 )), 1.0);
+	vec3 previousColor = texture(displayBufferTexture, vec2(gl_FragCoord.x / displayBufferTextureWidth,gl_FragCoord.y / displayBufferTextureHeight) ).rgb;
+	fragColor = vec4(mix( finalColor/5.0, previousColor, iterations / ( iterations + 1.0 )), 1.0);
 
-	// gl_FragColor = texture2D(elementIDMapAttributesTexture, vec2(gl_FragCoord.x / displayBufferTextureSize.x,gl_FragCoord.y / displayBufferTextureSize.y) ).rgba;
+	// fragColor = texture(elementIDMapAttributesTexture, vec2(gl_FragCoord.x / displayBufferTextureSize.x,gl_FragCoord.y / displayBufferTextureSize.y) ).rgba;
 }
