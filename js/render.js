@@ -74,6 +74,8 @@ var display_displayBuffer_textureLocation;
 
 var shaderReady = false;
 
+let displayBufferTextureData = [];
+
 //===== functions =====
 function resize() {
 	canvas.width = width;
@@ -81,7 +83,25 @@ function resize() {
 
 	gl.viewport(0, 0, canvas.width, canvas.height);
 
-	var type = gl.getExtension('OES_texture_float') ? gl.FLOAT : gl.UNSIGNED_BYTE;
+	
+	
+	// let type1, type2;
+	// if (!gl.getExtension('OES_texture_float') || gl.getExtension('WEBGL_color_buffer_float')) {
+	// 	console.log('OES_texture_float & WEBGL_color_buffer_float are not supported by your browser and/or hardware');
+	// 	displayBufferTextureData[0] = new Uint8Array(canvas.width * canvas.height * 3).fill(0.0);
+	// 	displayBufferTextureData[1] = new Uint8Array(canvas.width * canvas.height * 3).fill(0.0);
+	// 	type1 = gl.RGB8;
+	// 	type2 = gl.UNSIGNED_BYTE;
+	// } else {
+	// 	displayBufferTextureData[0] = new Float32Array(canvas.width * canvas.height * 3).fill(0);
+	// 	displayBufferTextureData[1] = new Float32Array(canvas.width * canvas.height * 3).fill(0);
+	// 	type1 = gl.RGB32F;
+	// 	type2 = gl.FLOAT;
+	// }
+	displayBufferTextureData[0] = new Float32Array(canvas.width * canvas.height * 4).fill(0);
+	displayBufferTextureData[1] = new Float32Array(canvas.width * canvas.height * 4).fill(0);
+	type1 = gl.RGBA32F;
+	type2 = gl.FLOAT;
 
 	gl.activeTexture(gl.TEXTURE0);
 	gl.bindTexture(gl.TEXTURE_2D, displayBufferTextures[0]);
@@ -89,14 +109,14 @@ function resize() {
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, canvas.width, canvas.height, 0, gl.RGB, type, null);
+	gl.texImage2D(gl.TEXTURE_2D, 0, type1, canvas.width, canvas.height, 0, gl.RGBA, type2, displayBufferTextureData[0]);
 
 	gl.bindTexture(gl.TEXTURE_2D, displayBufferTextures[1]);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, canvas.width, canvas.height, 0, gl.RGB, type, null);
+	gl.texImage2D(gl.TEXTURE_2D, 0, type1, canvas.width, canvas.height, 0, gl.RGBA, type2, displayBufferTextureData[1]);
 
 	gl.bindTexture(gl.TEXTURE_2D, null);
 
@@ -112,6 +132,13 @@ function initGL(){
 		alert("Could not initialise WebGL, sorry :-(");
 		return;
 	}
+	let ext = gl.getExtension('EXT_color_buffer_float');
+	if (!ext) {
+		console.log('EXT_color_buffer_float is not supported by your browser and/or hardware');
+	}else{
+		console.log("EXT_color_buffer_float enabled")
+	}
+
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
     gl.enable(gl.DEPTH_TEST);
 }
@@ -278,7 +305,7 @@ function render_loop() {
 		gl.uniform2f(pt_objAttributesTextureSize_uniformLocation, Scene.objAttributesWidth, Scene.objAttributesHeight);
 		gl.activeTexture(gl.TEXTURE1);  //attributes for objs
 		gl.bindTexture(gl.TEXTURE_2D, objAttributesTexture);
-		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, Scene.objAttributesWidth, Scene.objAttributesHeight, 0, gl.RGBA, gl.FLOAT, scene.objAttributesTextureData);
+		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA32F, Scene.objAttributesWidth, Scene.objAttributesHeight, 0, gl.RGBA, gl.FLOAT, scene.objAttributesTextureData);
 		gl.uniform1i(pt_objAttributes_textureLocation, 1);
 
 		gl.uniform1i(pt_objSectionsPerObj_uniformLocation, Scene.objSectionsPerObj);
@@ -288,7 +315,7 @@ function render_loop() {
 		gl.uniform2f(pt_materialAttributesTextureSize_uniformLocation, Scene.materialAttributesWidth, Scene.materialAttributesHeight);
 		gl.activeTexture(gl.TEXTURE2);  //attributes for materials
 		gl.bindTexture(gl.TEXTURE_2D, materialAttributesTexture);
-		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, Scene.materialAttributesWidth, Scene.materialAttributesHeight, 0, gl.RGBA, gl.FLOAT, scene.materialAttributesTextureData);
+		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA32F, Scene.materialAttributesWidth, Scene.materialAttributesHeight, 0, gl.RGBA, gl.FLOAT, scene.materialAttributesTextureData);
 		gl.uniform1i(pt_materialAttributes_textureLocation, 2);
 
 		gl.uniform1i(pt_materialSectionsPerMaterial_uniformLocation, Scene.materialSectionsPerMaterial);
@@ -300,7 +327,7 @@ function render_loop() {
 		gl.uniform2f(pt_bvhsAttributesTextureSize_uniformLocation, BVHs.bvhsAttributesWidth, BVHs.bvhsAttributesHeight);
 		gl.activeTexture(gl.TEXTURE3);  //attributes for BVHs
 		gl.bindTexture(gl.TEXTURE_2D, bvhsAttributesTexture);
-		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, BVHs.bvhsAttributesWidth, BVHs.bvhsAttributesHeight, 0, gl.RGBA, gl.FLOAT, scene.bvhsManager.bvhsAttributesTextureData);
+		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA32F, BVHs.bvhsAttributesWidth, BVHs.bvhsAttributesHeight, 0, gl.RGBA, gl.FLOAT, scene.bvhsManager.bvhsAttributesTextureData);
 		gl.uniform1i(pt_bvhsAttributes_textureLocation, 3);
 
 		gl.uniform1i(pt_bvhsSectionsPerNode_uniformLocation, BVHs.bvhsSectionsPerNode);
@@ -308,7 +335,7 @@ function render_loop() {
 		gl.uniform2f(pt_elementIDMapAttributesTextureSize_uniformLocation, BVHs.elementIDMapAttributesWidth, BVHs.elementIDMapAttributesHeight);
 		gl.activeTexture(gl.TEXTURE4);  //attributes for elementIDMap
 		gl.bindTexture(gl.TEXTURE_2D, elementIDMapAttributesTexture);
-		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, BVHs.elementIDMapAttributesWidth, BVHs.elementIDMapAttributesHeight, 0, gl.RGBA, gl.FLOAT, scene.bvhsManager.elementIDMapAttributesTextureData);
+		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA32F, BVHs.elementIDMapAttributesWidth, BVHs.elementIDMapAttributesHeight, 0, gl.RGBA, gl.FLOAT, scene.bvhsManager.elementIDMapAttributesTextureData);
 		gl.uniform1i(pt_elementIDMapAttributes_textureLocation, 4);
 		// end bvh
 
@@ -317,6 +344,10 @@ function render_loop() {
 
 		gl.bindFramebuffer(gl.FRAMEBUFFER, frameBuffer);
 		gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, displayBufferTextures[1], 0);
+
+		if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE) {
+			console.log('Framebuffer is not complete');
+		}
 
 		gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
@@ -336,7 +367,7 @@ function render_loop() {
 		gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
 		iterations++;
-		time+=7e-5;
+		time+=7e-6;
 	
 	}
 }
