@@ -1,19 +1,21 @@
-class AABB {
-    constructor(min = vec3.createFrom(Infinity, Infinity, Infinity),
-                max = vec3.createFrom(-Infinity, -Infinity, -Infinity)) {
+import {vec3} from "gl-matrix";
+
+export class AABB {
+    constructor(min = vec3.fromValues(Infinity, Infinity, Infinity),
+                max = vec3.fromValues(-Infinity, -Infinity, -Infinity)) {
         this.min = min;
         this.max = max;
     }
 
     surfaceArea(){
-        let diff = vec3.createFrom(0,0,0);
-        vec3.subtract(this.max, this.min, diff);
+        let diff = vec3.fromValues(0,0,0);
+        vec3.subtract(diff, this.max, this.min);
         return 2 * (diff[0] * diff[1] + diff[0] * diff[2] + diff[1] * diff[2]);
     }
 
     static merge(aabb1, aabb2){
-        let min = vec3.createFrom(0,0,0);
-        let max = vec3.createFrom(0,0,0);
+        let min = vec3.fromValues(0,0,0);
+        let max = vec3.fromValues(0,0,0);
         for (let i = 0; i<3; i++){
             min[i] = Math.min(aabb1.min[i], aabb2.min[i]);
             max[i] = Math.max(aabb1.max[i], aabb2.max[i]);
@@ -26,13 +28,13 @@ class AABB {
     }
 }
 
-class BVHs {
+export class BVHs {
     static bvhsAttributesWidth = 512;
     static bvhsAttributesHeight = 512;
     static elementIDMapAttributesWidth = 512;
     static elementIDMapAttributesHeight = 512;
     static bvhsNodeSize = 12; // 3x4 floats
-    static bvhsSectionSize = 4; // 4 floats
+    // static bvhsSectionSize = 4; // 4 floats
     static bvhsSectionsPerNode = 3; // 3 sections per node
 
     //node[0-8]
@@ -55,7 +57,7 @@ class BVHs {
     // if for beauty, you can also build class
     constructor() {
         this.bvhsAttributesTextureData = new Float32Array(BVHs.bvhsAttributesWidth * BVHs.bvhsAttributesHeight * 4);
-        this.bvhsDataEnd = 0;
+        this.bvhsDataEnd = 0;//BVHs.bvhsNodeSize;
         this.elementIDMapAttributesTextureData = new Float32Array(BVHs.elementIDMapAttributesWidth * BVHs.elementIDMapAttributesHeight * 4);
         this.elementIDMapDataEnd = 0;
     }
@@ -72,8 +74,8 @@ class BVHs {
 
     getAABB(nodeID){
         
-        let min = vec3.createFrom(0,0,0);
-        let max = vec3.createFrom(0,0,0);
+        let min = vec3.fromValues(0,0,0);
+        let max = vec3.fromValues(0,0,0);
         for(let i = 0; i < 3; i++){
             min[i] = this.bvhsAttributesTextureData[nodeID * BVHs.bvhsNodeSize + i];
             max[i] = this.bvhsAttributesTextureData[nodeID * BVHs.bvhsNodeSize + i + 4];
@@ -147,7 +149,7 @@ class BVHs {
         return aabb;
     }
 
-    timeTri= 2.0;
+    timeTri= 1.0;
     timeAABB = 1.0;
 
     _newNode(){
@@ -264,10 +266,12 @@ class BVHs {
         if (elementsWithAABB.length === 0) {
             return -1;
         }
+        // console.log(elementsWithAABB);
 
         let elements = [];
         for (let i = 0; i < elementsWithAABB.length; i++){
             elements.push([i, elementsWithAABB[i].getAABB()]);
+            // console.log(elements[i]);
         }
 
         let root = this._newNode();

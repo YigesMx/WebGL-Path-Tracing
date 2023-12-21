@@ -1,63 +1,63 @@
 /////////////////////////////////////////////////////////////////////////
 /*******************************GUI*************************************/
-
-var toHide = true;
-function toggleContorller(){
-	if (toHide)
-	{
-		document.getElementById("icon").style.background = 'url("left-arrow.png")';
-		document.getElementById("gui-left").style.display = "none";
-		document.getElementById("gui-right").style.display = "none";
-	}
-	else
-	{
-		document.getElementById("icon").style.background = 'url("right-arrow.png")';
-		document.getElementById("gui-left").style.display = "block";
-		document.getElementById("gui-right").style.display = "block";
-	}
-	toHide = !toHide;
-}
-
-//gui
-var gui1;
-var guiConfig;
-
-var gui2;
-var guiObjs = [];
-
-var width=512;
-var height=512;
-
-function initGUI() {
-	width = canvas.width;
-	height = canvas.height;
-
-    //gui
-    gui1 = new dat.GUI({ autoPlace: false });
-    var container = document.getElementById('gui-right');
-    container.appendChild(gui1.domElement);
-
-    guiConfig = new GUIConfig();
-
-    gui1.add(guiConfig, 'width').onChange(function () {
-        width = guiConfig.width;
-    });
-    gui1.add(guiConfig, 'height').onChange(function () {
-        height = guiConfig.height;
-    });
-
-	gui1.add(guiConfig, 'antiAliasing').onChange(function () {
-        enableSSAA = (guiConfig.antiAliasing === true) ? 1 : 0;
-		resetIterations();
-    });
-}
-
-function GUIConfig() {
-    this.width = width;
-    this.height = height;
-
-	this.antiAliasing = (enableSSAA === 1);
-}
+//
+// var toHide = true;
+// function toggleContorller(){
+// 	if (toHide)
+// 	{
+// 		document.getElementById("icon").style.background = 'url("left-arrow.png")';
+// 		document.getElementById("gui-left").style.display = "none";
+// 		document.getElementById("gui-right").style.display = "none";
+// 	}
+// 	else
+// 	{
+// 		document.getElementById("icon").style.background = 'url("right-arrow.png")';
+// 		document.getElementById("gui-left").style.display = "block";
+// 		document.getElementById("gui-right").style.display = "block";
+// 	}
+// 	toHide = !toHide;
+// }
+//
+// //gui
+// var gui1;
+// var guiConfig;
+//
+// var gui2;
+// var guiObjs = [];
+//
+// var width=512;
+// var height=512;
+//
+// function initGUI() {
+// 	width = canvas.width;
+// 	height = canvas.height;
+//
+//     //gui
+//     gui1 = new dat.GUI({ autoPlace: false });
+//     var container = document.getElementById('gui-right');
+//     container.appendChild(gui1.domElement);
+//
+//     guiConfig = new GUIConfig();
+//
+//     gui1.add(guiConfig, 'width').onChange(function () {
+//         width = guiConfig.width;
+//     });
+//     gui1.add(guiConfig, 'height').onChange(function () {
+//         height = guiConfig.height;
+//     });
+//
+// 	gui1.add(guiConfig, 'antiAliasing').onChange(function () {
+//         enableSSAA = (guiConfig.antiAliasing === true) ? 1 : 0;
+// 		resetIterations();
+//     });
+// }
+//
+// function GUIConfig() {
+//     this.width = width;
+//     this.height = height;
+//
+// 	this.antiAliasing = (enableSSAA === 1);
+// }
 //
 // function GUIDefaultScene(){
 // 	gui2 = new dat.GUI({ autoPlace: false });

@@ -1,6 +1,10 @@
+import {AABB, BVHs} from "./bvhs.js";
+import {mat4, vec3, vec4} from "gl-matrix";
+import {MeshModels} from "./meshes.js";
 
-class Material {
+export class Material {
     static size = 12;
+    static sectionsPerMaterial = 3; // 3 sections per material
     constructor(name = 'new material',
                 color= [0.9, 0.9, 0.9],
                 reflective = false,
@@ -41,15 +45,17 @@ class Material {
     }
 }
 
-class Obj {
+export class Obj {
     static size = 12;
+    static sectionsPerObj = 3; // 3 sections per obj
     constructor(name = 'new object',
                 objType = 'sphere',
                 pos = [0, 0, 0],
                 scale = [1, 1, 1],
                 rotation = [0, 0, 0],
                 materialID = 0,
-                inverseNormal = false) {
+                meshID = 0,
+                meshAABB = null) {
         this.name = name;
         if (objType === 'sphere' || objType === 'cube' || objType === 'plane' || objType === 'mesh') {
             this.objType = objType;
@@ -60,7 +66,8 @@ class Obj {
         this.scale = scale;
         this.rotation = rotation;
         this.materialID = materialID;
-        this.inverseNormal = inverseNormal;
+        this.meshID = meshID;
+        this.meshAABB = meshAABB;
     }
 
     getObjTypeID(){
@@ -74,7 +81,6 @@ class Obj {
             return 3.0;
         } else {
             throw Error("Invalid object type");
-            return 0;
         }
     }
 
@@ -94,21 +100,21 @@ class Obj {
         array[8] = this.rotation[0];
         array[9] = this.rotation[1];
         array[10] = this.rotation[2];
-        array[11] = this.inverseNormal ? 1.0 : 0;
+        array[11] = this.meshID;
 
         return array;
     }
 
     get8VertexesFromMinMax(min, max){
         let vertexes = [];
-        vertexes.push(vec4.createFrom(min[0], min[1], min[2], 1.0));
-        vertexes.push(vec4.createFrom(max[0], min[1], min[2], 1.0));
-        vertexes.push(vec4.createFrom(min[0], max[1], min[2], 1.0));
-        vertexes.push(vec4.createFrom(max[0], max[1], min[2], 1.0));
-        vertexes.push(vec4.createFrom(min[0], min[1], max[2], 1.0));
-        vertexes.push(vec4.createFrom(max[0], min[1], max[2], 1.0));
-        vertexes.push(vec4.createFrom(min[0], max[1], max[2], 1.0));
-        vertexes.push(vec4.createFrom(max[0], max[1], max[2], 1.0));
+        vertexes.push(vec4.fromValues(min[0], min[1], min[2], 1.0));
+        vertexes.push(vec4.fromValues(max[0], min[1], min[2], 1.0));
+        vertexes.push(vec4.fromValues(min[0], max[1], min[2], 1.0));
+        vertexes.push(vec4.fromValues(max[0], max[1], min[2], 1.0));
+        vertexes.push(vec4.fromValues(min[0], min[1], max[2], 1.0));
+        vertexes.push(vec4.fromValues(max[0], min[1], max[2], 1.0));
+        vertexes.push(vec4.fromValues(min[0], max[1], max[2], 1.0));
+        vertexes.push(vec4.fromValues(max[0], max[1], max[2], 1.0));
         return vertexes;
     }
 
@@ -116,24 +122,23 @@ class Obj {
         let vertexes = [];
         if (this.objType === 'sphere') {
             vertexes = this.get8VertexesFromMinMax(
-                vec4.createFrom(-0.51, -0.51, -0.51, 1.0),
-                vec4.createFrom(0.51, 0.51, 0.51, 1.0)
+                vec3.fromValues(-0.51, -0.51, -0.51),
+                vec3.fromValues(0.51, 0.51, 0.51)
             );
         } else if (this.objType === 'plane') {
             vertexes = this.get8VertexesFromMinMax(
-                vec4.createFrom(-0.51, -0.01, -0.51, 1.0),
-                vec4.createFrom(0.51, 0.01, 0.51, 1.0)
+                vec3.fromValues(-0.51, -0.01, -0.51),
+                vec3.fromValues(0.51, 0.01, 0.51)
             );
         } else if (this.objType === 'cube') {
             vertexes = this.get8VertexesFromMinMax(
-                vec4.createFrom(-0.51, -0.51, -0.51, 1.0),
-                vec4.createFrom(0.51, 0.51, 0.51, 1.0)
+                vec3.fromValues(-0.51, -0.51, -0.51),
+                vec3.fromValues(0.51, 0.51, 0.51)
             );
         } else if (this.objType === 'mesh') {
-            // TODO: min max of Mesh
             vertexes = this.get8VertexesFromMinMax(
-                vec4.createFrom(-0.51, -0.51, -0.51, 1.0),
-                vec4.createFrom(0.51, 0.51, 0.51, 1.0)
+                this.meshAABB.min,
+                this.meshAABB.max
             );
         } else {
             throw Error("Invalid object type");
@@ -142,17 +147,17 @@ class Obj {
 
         let modelMat = mat4.create();
         mat4.identity(modelMat);
-        mat4.translate(modelMat, vec3.createFrom(this.pos[0], this.pos[1], this.pos[2]));
-        mat4.rotateX(modelMat, Math.PI * this.rotation[0] / 180.0);
-        mat4.rotateY(modelMat, Math.PI * this.rotation[1] / 180.0);
-        mat4.rotateZ(modelMat, Math.PI * this.rotation[2] / 180.0);
-        mat4.scale(modelMat, vec3.createFrom(this.scale[0], this.scale[1], this.scale[2]));
+        mat4.translate(modelMat, modelMat, vec3.fromValues(this.pos[0], this.pos[1], this.pos[2]));
+        mat4.rotateX(modelMat, modelMat, Math.PI * this.rotation[0] / 180.0);
+        mat4.rotateY(modelMat, modelMat, Math.PI * this.rotation[1] / 180.0);
+        mat4.rotateZ(modelMat, modelMat, Math.PI * this.rotation[2] / 180.0);
+        mat4.scale(modelMat, modelMat, vec3.fromValues(this.scale[0], this.scale[1], this.scale[2]));
 
-        let min = vec3.createFrom(Infinity, Infinity, Infinity);
-        let max = vec3.createFrom(-Infinity, -Infinity, -Infinity);
+        let min = vec3.fromValues(Infinity, Infinity, Infinity);
+        let max = vec3.fromValues(-Infinity, -Infinity, -Infinity);
         for (let i = 0; i < vertexes.length; i++){
             let vertex = vec4.create();
-            mat4.multiplyVec4(modelMat, vertexes[i], vertex);
+            vec4.transformMat4(vertex, vertexes[i], modelMat);
             for (let j = 0; j < 3; j++){
                 min[j] = Math.min(min[j], vertex[j]);
                 max[j] = Math.max(max[j], vertex[j]);
@@ -163,14 +168,14 @@ class Obj {
     }
 }
 
-class Scene {
+export class Scene {
     static materialAttributesWidth = 512;
     static materialAttributesHeight = 512;
     static objAttributesWidth = 512;
     static objAttributesHeight = 512;
 
-    static objSectionsPerObj = 3; // 3 sections per obj
-    static materialSectionsPerMaterial = 3; // 3 sections per material
+    // static objSectionsPerObj = 3; // 3 sections per obj
+    // static materialSectionsPerMaterial = 3; // 3 sections per material
     constructor() {
         this.materials = [];
         this.materialAttributesTextureData = new Float32Array(Scene.materialAttributesWidth * Scene.materialAttributesHeight * 4);
@@ -196,6 +201,14 @@ class Scene {
 
         this.bvhsManager = new BVHs();
         this.rootBVH = this.bvhsManager.newBVH(this.objs);
+
+        this.meshModelsManager = new MeshModels();
+
+        this.envTexture = new Image;
+    }
+
+    addEnvTexture(image){
+        this.envTexture = image;
     }
 
     addMaterial(material) {
@@ -220,6 +233,10 @@ class Scene {
         for(let i = 0; i < Obj.size; i++) {
             this.objAttributesTextureData[Obj.size * id + i] = array[i];
         }
+    }
+
+    addMeshes(parsedMeshes){
+        this.meshModelsManager.addMeshes(parsedMeshes, this.bvhsManager);
     }
 
     flushRootBVH(){

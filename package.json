@@ -1,0 +1,14 @@
+{
+  "name": "webgl2_path_tracing",
+  "version": "0.0.1",
+  "description": "Path tracing renderer and utilities using WebGL2.",
+  "type": "module",
+  "dependencies": {
+    "gl-matrix": "^3.4.3",
+    "obj-file-parser": "^0.6.2",
+    "stats.js": "^0.17.0"
+  },
+  "devDependencies": {
+    "vite": "^5.0.10"
+  }
+}

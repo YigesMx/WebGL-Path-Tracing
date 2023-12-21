@@ -3,7 +3,10 @@
 precision highp float;
 
 #ifndef PI
-#define PI 3.14159265358979323846264
+#define PI 3.1415926535
+#endif
+#ifndef EPS
+#define EPS 0.00001
 #endif
 
 struct Ray {
@@ -19,7 +22,7 @@ struct Object {
     mat4 invModel;
     mat4 transInvModel;
 
-    int inverseNormal;
+    int meshID;
 
     vec3 color;
 
@@ -28,7 +31,7 @@ struct Object {
     int refractive;
     float IOR; // indexOfRefraction
 
-    int emittance;
+    float emittance;
     int subsurfaceScatter;
 };
 
@@ -37,6 +40,11 @@ struct Intersection {
     vec3 intersectNormal;
     float intersectDistance;
     Object intersectObj;
+};
+
+struct Triangle {
+    mat3 vertex;
+    mat3 vertexNormal;
 };
 
 /*Utility Functions*/
@@ -216,7 +224,14 @@ Fresnel calculateFresnel(vec3 normal, vec3 incident, float incidentIOR, float tr
         fresnel.transmissionCoefficient = 1.0 - fresnel.reflectionCoefficient;
         return fresnel;
     }
+}
 
+/*for reflectivity*/
+vec3 reflectDiffuseRandom(in vec3 direction, in float reflectivity, in vec3 rVec3, in float seed) {
+    vec3 randomDirection = normalize(calculateRandomDirectionInHemisphere(direction, rVec3, seed + 0.7));
+    vec3 scale = vec3(- log(1.0 + EPS - reflectivity) + 0.0001);
+    vec3 newDirection = normalize(direction*scale + randomDirection);
+    return newDirection;
 }
 
 ///*For Subsurface Scattering  https://machinesdontcare.wordpress.com/tag/subsurface/ */
