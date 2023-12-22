@@ -1,11 +1,11 @@
 let fetch_urls;
 fetch_urls = function(urls, callback) {
-    var results = [];
-    var countdown = urls.length;
-    for (var i = 0; i < urls.length; i++) {
+    let results = [];
+    let countdown = urls.length;
+    for (let i = 0; i < urls.length; i++) {
         results.push(null);
         (function(i) {
-            var xhr = new XMLHttpRequest();
+            let xhr = new XMLHttpRequest();
             xhr.open('GET', urls[i], true);
             xhr.onload = function() {
                 results[i] = xhr.responseText;
@@ -44,7 +44,6 @@ function loadTexture(gl, url) {
     const image = new Image();
     image.onload = () => {
         gl.bindTexture(gl.TEXTURE_2D, texture);
-        // gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
         gl.texImage2D(gl.TEXTURE_2D, level, internalFormat, srcFormat, srcType, image,);
 
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
@@ -56,10 +55,6 @@ function loadTexture(gl, url) {
     image.src = url;
 
     return texture;
-}
-
-function isPowerOf2(value) {
-    return (value & (value - 1)) === 0;
 }
 
 export {fetch_urls, wait_fetch_urls, loadTexture};

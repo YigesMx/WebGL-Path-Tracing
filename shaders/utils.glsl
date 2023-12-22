@@ -9,6 +9,8 @@ precision highp float;
 #define EPS 0.00001
 #endif
 
+/* Classes */
+
 struct Ray {
     vec3 origin;
     vec3 direction;
@@ -39,7 +41,6 @@ struct Intersection {
     vec3 intersectPos;
     vec3 intersectNormal;
     float intersectDistance;
-    Object intersectObj;
 };
 
 struct Triangle {
@@ -47,7 +48,7 @@ struct Triangle {
     mat3 vertexNormal;
 };
 
-/*Utility Functions*/
+/* Mat Utility Functions */
 void translate(inout mat4 origin,in vec3 dir) {
     mat4 trans = mat4(1.0,0.0,0.0,0.0,
     0.0,1.0,0.0,0.0,
@@ -64,7 +65,6 @@ void scale(inout mat4 origin,in vec3 scalev) {
     origin =  origin * scale;
 }
 
-
 void rotateX (inout mat4 origin, in float angle) {
     mat4 dest = origin;
     float s = sin(angle), c = cos(angle),
@@ -80,7 +80,6 @@ void rotateX (inout mat4 origin, in float angle) {
     return;
 }
 
-
 void rotateY  (inout mat4 origin, in float angle) {
     mat4 dest = origin;
     float s = sin(angle),c = cos(angle),
@@ -95,7 +94,6 @@ void rotateY  (inout mat4 origin, in float angle) {
     origin = dest;
     return;
 }
-
 
 void rotateZ (inout mat4 origin, in float angle) {
     mat4 dest = origin;
@@ -143,7 +141,7 @@ mat4 inversemat(in mat4 mat) {
     return dest;
 }
 
-mat4 transposemat(in mat4 mat) {
+mat4 transposeMat(in mat4 mat) {
     mat4 dest = mat4(1.0);
     dest[0][0] = mat[0][0]; dest[0][1] = mat[1][0]; dest[0][2] = mat[2][0]; dest[0][3] = mat[3][0];
     dest[1][0] = mat[0][1]; dest[1][1] = mat[1][1]; dest[1][2] = mat[2][1]; dest[1][3] = mat[3][1];
@@ -153,7 +151,7 @@ mat4 transposemat(in mat4 mat) {
 }
 
 
-/*For Random Stuff*/
+/* For Random */
 float randOnVec3WithNoiseAndSeed(vec3 rVec3, vec3 noise, float seed) {
     return fract(sin(dot(rVec3 + seed, noise)) * 43758.5453 + seed);
 }
@@ -163,19 +161,8 @@ highp float randOnVec2(vec2 rVec2) {
     return fract(sin(sn) * c);
 }
 
-// 返回值 [0.0f, 1.0f)
-//float rand_times = 0.0;
-//float Rand(vec2 texCoord, vec4 rdSeed){
-//    float a = randOnVec2(vec2(texCoord.x, rdSeed.x));
-//    float b = randOnVec2(vec2(rdSeed.y, texCoord.y));
-//    float c = randOnVec2(vec2(rand_times++, rdSeed.z));
-//    float d = randOnVec2(vec2(rdSeed.w, a));
-//    float e = randOnVec2(vec2(b, c));
-//    float f = randOnVec2(vec2(d, e));
-//    return f;
-//}
-
-vec3 calculateRandomDirectionInHemisphere(vec3 normal, vec3 rVec3, float seed) {
+/* For Diffusion */
+vec3 calculateRandomDirectionInHemisphere(vec3 normal, vec3 rVec3, float seed) { // 在法线方向上选取一个半球面进行光线方向的随机选取
 
     float u = randOnVec3WithNoiseAndSeed(rVec3, vec3(12.9898, 78.233, 151.7182), seed);
     float v = randOnVec3WithNoiseAndSeed(rVec3, vec3(63.7264, 10.873, 623.6736), seed);
@@ -199,7 +186,7 @@ vec3 calculateRandomDirectionInHemisphere(vec3 normal, vec3 rVec3, float seed) {
     return ( up * normal ) + ( cos(around) * over * perpendicularDirection1 ) + ( sin(around) * over * perpendicularDirection2 );
 }
 
-/*For Refraction*/
+/* For Refraction */
 struct Fresnel {
     float reflectionCoefficient;
     float transmissionCoefficient;
@@ -226,15 +213,15 @@ Fresnel calculateFresnel(vec3 normal, vec3 incident, float incidentIOR, float tr
     }
 }
 
-/*for reflectivity*/
-vec3 reflectDiffuseRandom(in vec3 direction, in float reflectivity, in vec3 rVec3, in float seed) {
+/* For Reflectivity & Roughness */
+vec3 reflectDiffuseRandom(in vec3 direction, in float reflectivity, in vec3 rVec3, in float seed) { // 在方向上再选取一个半球面进行光线方向的随机选取
     vec3 randomDirection = normalize(calculateRandomDirectionInHemisphere(direction, rVec3, seed + 0.7));
     vec3 scale = vec3(- log(1.0 + EPS - reflectivity) + 0.0001);
     vec3 newDirection = normalize(direction*scale + randomDirection);
     return newDirection;
 }
 
-///*For Subsurface Scattering  https://machinesdontcare.wordpress.com/tag/subsurface/ */
+/* For Subsurface Scattering */
 float halfLambert(in vec3 vect1, in vec3 vect2) {
     float product = dot(vect1,vect2);
     return product * 0.5 + 0.5;
@@ -246,13 +233,13 @@ float blinnPhongSpecular(in vec3 normalVec, in vec3 lightVec, in float specPower
 }
 
 
-vec3 subScatterFS(in Intersection intersect,in float seed) {
+vec3 subScatterFS(in Intersection intersect, in Object obj, in float seed) { // TODO: 目前这个是写死的模拟次表面散射，考虑能否改为通过 pt和材质动态 计算的。
 
     float RimScalar = 1.0;
     float MaterialThickness = 0.5;
     vec3 ExtinctionCoefficient = vec3(1.0,1.0,1.0);
     vec3 SpecColor = vec3(1.0,1.0,1.0);
-    vec3 lightPoint = vec3(0.0,5.0,0.0);
+    vec3 lightPoint = vec3(-3.5, 4.0, 5.0);
 
     float attenuation = 10.0 * (1.0 / distance(lightPoint,intersect.intersectPos));
     vec3 eVec = normalize(intersect.intersectPos);
@@ -260,7 +247,7 @@ vec3 subScatterFS(in Intersection intersect,in float seed) {
     vec3 wNorm = normalize(intersect.intersectNormal);
 
     vec3 dotLN = vec3(halfLambert(lVec,wNorm) * attenuation);
-    dotLN *= intersect.intersectObj.color;
+    dotLN *= obj.color;
 
     vec3 indirectLightComponent = vec3(MaterialThickness * max(0.0,dot(-wNorm,lVec)));
     indirectLightComponent += MaterialThickness * halfLambert(-eVec,lVec);
