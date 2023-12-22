@@ -266,12 +266,10 @@ export class BVHs {
         if (elementsWithAABB.length === 0) {
             return -1;
         }
-        // console.log(elementsWithAABB);
 
         let elements = [];
         for (let i = 0; i < elementsWithAABB.length; i++){
             elements.push([i, elementsWithAABB[i].getAABB()]);
-            // console.log(elements[i]);
         }
 
         let root = this._newNode();

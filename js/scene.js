@@ -5,7 +5,8 @@ import {MeshModels} from "./meshes.js";
 export class Material {
     static size = 12;
     static sectionsPerMaterial = 3; // 3 sections per material
-    constructor(name = 'new material',
+    constructor(id,
+                name = 'new material',
                 color= [0.9, 0.9, 0.9],
                 reflective = false,
                 reflectivity = 1.0,
@@ -13,6 +14,7 @@ export class Material {
                 indexOfRefraction = 1.0,
                 emittance = 100.0,
                 subsurfaceScatter = false) {
+        this.id = id;
         this.name = name;
         this.color = color;
         this.reflective = reflective;
@@ -48,7 +50,8 @@ export class Material {
 export class Obj {
     static size = 12;
     static sectionsPerObj = 3; // 3 sections per obj
-    constructor(name = 'new object',
+    constructor(id,
+                name = 'new object',
                 objType = 'sphere',
                 pos = [0, 0, 0],
                 scale = [1, 1, 1],
@@ -56,6 +59,7 @@ export class Obj {
                 materialID = 0,
                 meshID = 0,
                 meshAABB = null) {
+        this.id = id;
         this.name = name;
         if (objType === 'sphere' || objType === 'cube' || objType === 'plane' || objType === 'mesh') {
             this.objType = objType;
@@ -142,7 +146,6 @@ export class Obj {
             );
         } else {
             throw Error("Invalid object type");
-            return 0;
         }
 
         let modelMat = mat4.create();
@@ -182,16 +185,6 @@ export class Scene {
         // each material occupy 3 pixels (3x4 floats) in texture
         // we call a pixel as a materialSection
         // materialID = [ materialSectionID / materialSectionsPerMaterial ]
-        this.addMaterial(new Material(
-            'default material',
-            [1.0, 1.0, 1.0],
-            false,
-            1.0,
-            false,
-            1.0,
-            0.0,
-            false
-        ));
 
         this.objs = [];
         this.objAttributesTextureData = new Float32Array(Scene.objAttributesWidth * Scene.objAttributesHeight * 4);
@@ -203,13 +196,8 @@ export class Scene {
         this.rootBVH = this.bvhsManager.newBVH(this.objs);
 
         this.meshModelsManager = new MeshModels();
-
-        this.envTexture = new Image;
     }
 
-    addEnvTexture(image){
-        this.envTexture = image;
-    }
 
     addMaterial(material) {
         this.materials.push(material);
@@ -243,100 +231,3 @@ export class Scene {
         this.rootBVH = this.bvhsManager.newBVH(this.objs);
     }
 }
-
-// var objData = [];
-//
-// function AddObjsAttr(i) {
-//     // gl.useProgram(shaderProgram);
-//     //color:No need for map
-//     objAttributesTextureData[28 * i + 0] = 255.0 * objData[i].obj_color[0];
-//     objAttributesTextureData[28 * i + 1] = 255.0 * objData[i].obj_color[1];
-//     objAttributesTextureData[28 * i + 2] = 255.0 * objData[i].obj_color[2];
-//     objAttributesTextureData[28 * i + 3] = 255.0;
-//     //obj_type:[0.0,5.0] to [0,255]  texture_type:[0.0,5.0] to [0,255]
-//     objAttributesTextureData[28 * i + 4] = 255.0 * objData[i].obj_type / 5.0;
-//     objAttributesTextureData[28 * i + 5] = 255.0 * objData[i].obj_textureType / 5.0;
-//     objAttributesTextureData[28 * i + 6] = 255.0;
-//     objAttributesTextureData[28 * i + 7] = 255.0;
-//     //mat1:No need for map
-//     objAttributesTextureData[28 * i + 8] = 255.0 * objData[i].obj_reflective;
-//     objAttributesTextureData[28 * i + 9] = 255.0 * objData[i].obj_refractive;
-//     objAttributesTextureData[28 * i + 10] = 255.0 * objData[i].obj_reflectivity;
-//     objAttributesTextureData[28 * i + 11] = 255.0;
-//     //mat2:IOR[0,3] to [0,255]  emittance [0,25] to [0,255]
-//     objAttributesTextureData[28 * i + 12] = 255.0 * objData[i].obj_indexOfRefraction / 3.0;
-//     objAttributesTextureData[28 * i + 13] = 255.0 * objData[i].obj_subsurfaceScatter;
-//     objAttributesTextureData[28 * i + 14] = 255.0 * objData[i].obj_emittance / 100.0;
-//     objAttributesTextureData[28 * i + 15] = 255.0;
-//     //pos:[-10.0,10.0] to [0,255]
-//     var mind = -10.0;
-//     var maxd =  10.0;
-//     objAttributesTextureData[28 * i + 16] = 255.0 * (objData[i].obj_pos[0] - mind) / (maxd - mind);
-//     objAttributesTextureData[28 * i + 17] = 255.0 * (objData[i].obj_pos[1] - mind) / (maxd - mind);
-//     objAttributesTextureData[28 * i + 18] = 255.0 * (objData[i].obj_pos[2] - mind) / (maxd - mind);
-//     objAttributesTextureData[28 * i + 19] = 255.0;
-//     //rot:[0.0,360.0] to [0,255]
-//     objAttributesTextureData[28 * i + 20] = 255.0 * objData[i].obj_rotation[0] / 360.0;
-//     objAttributesTextureData[28 * i + 21] = 255.0 * objData[i].obj_rotation[1] / 360.0;
-//     objAttributesTextureData[28 * i + 22] = 255.0 * objData[i].obj_rotation[2] / 360.0;
-//     objAttributesTextureData[28 * i + 23] = 255.0;
-//     //scale:[0.0,10.0] to [0,255]
-//     objAttributesTextureData[28 * i + 24] = 255.0 * objData[i].obj_scale[0] / 10.0;
-//     objAttributesTextureData[28 * i + 25] = 255.0 * objData[i].obj_scale[1] / 10.0;
-//     objAttributesTextureData[28 * i + 26] = 255.0 * objData[i].obj_scale[2] / 10.0;
-//     objAttributesTextureData[28 * i + 27] = 255.0;
-//
-// }
-
-// var cubeNum = 0;
-// function addCube() {
-//     if (objData.length == 31)
-//         return;
-// 	objData.push({
-// 		obj_pos: [Math.random()*10-5, Math.random()*10-5, Math.random()*10-5],
-// 		obj_scale: [1.0, 1.0, 1.0],
-// 		obj_rotation: [Math.random()*360, Math.random()*360, Math.random()*360],
-// 		obj_color: [Math.random(), Math.random(), Math.random()],
-// 		obj_type: 2,
-// 		obj_textureType: 0,
-// 		obj_reflective: 0,
-// 		obj_refractive: 0,
-// 		obj_reflectivity: 1.0,
-// 		obj_indexOfRefraction: 1.0,
-// 		obj_emittance: 0,
-// 		obj_subsurfaceScatter: 0
-// 	});
-//
-//     AddObjsAttr(objData.length - 1);
-//
-//     // GUIAddObj("Cube " + ++cubeNum, objData.length - 1);
-//
-// 	resetIterations();
-// }
-//
-// var sphereNum = 3;
-//
-// function addSphere() {
-//     if (objData.length == 31)
-//         return;
-// 	objData.push({
-// 		obj_pos: [Math.random()*10-5, Math.random()*10-5, Math.random()*10-5],
-// 		obj_scale: [1.0, 1.0, 1.0],
-// 		obj_rotation: [Math.random()*360, Math.random()*360, Math.random()*360],
-// 		obj_color: [Math.random(), Math.random(), Math.random()],
-// 		obj_type: 0,
-// 		obj_textureType: 0,
-// 		obj_reflective: 0,
-// 		obj_refractive: 0,
-// 		obj_reflectivity: 1.0,
-// 		obj_indexOfRefraction: 1.0,
-// 		obj_emittance: 0,
-// 		obj_subsurfaceScatter: 0
-// 	});
-//
-//     AddObjsAttr(objData.length - 1);
-//
-//     // GUIAddObj("Sphere " + ++sphereNum, objData.length - 1);
-//
-// 	resetIterations();
-// }

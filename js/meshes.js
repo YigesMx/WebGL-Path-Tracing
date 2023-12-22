@@ -1,5 +1,5 @@
-import {AABB, BVHs} from "./bvhs.js";
-import {mat4, vec3, vec4} from "gl-matrix";
+import {AABB} from "./bvhs.js";
+import {vec3} from "gl-matrix";
 export class Triangle {
     static size = 18;
     static sectionPerTriangle = 6;
@@ -79,12 +79,12 @@ export class TriangleArray {
 export class Mesh {
     static size = 3;
     static sectionPerMesh = 1;
-    constructor(meshID, name, meshBVH, triangleArray, triangleAttributesStart, AABB) {
+    constructor(meshID, name, meshBVH, triangleArray, triangleAttributesBase, AABB) {
         this.meshID = meshID;
         this.name = name;
         this.meshBVH = meshBVH;
         this.triangleArray = triangleArray;
-        this.triangleAttributesStart = triangleAttributesStart;
+        this.triangleAttributesStart = triangleAttributesBase;
         this.AABB = AABB;
     }
 
@@ -125,7 +125,7 @@ export class MeshModels {
         }
     }
 
-    _newTriangleArrayStart(length) {
+    _newTriangleAttributesBase(length) {
         let start = this.triangleDataEnd;
         this.triangleDataEnd += length*18;
         return start;
@@ -136,7 +136,7 @@ export class MeshModels {
         let meshBVH = bvhsManager.newBVH(triangleArray.triangles);
         let meshID = this.meshes.length;
         let AABB = bvhsManager.getAABB(meshBVH);
-        this.meshes.push(new Mesh(meshID, parsedMesh.name, meshBVH, triangleArray, this._newTriangleArrayStart(triangleArray.triangles.length), AABB));
+        this.meshes.push(new Mesh(meshID, parsedMesh.name, meshBVH, triangleArray, this._newTriangleAttributesBase(triangleArray.triangles.length), AABB));
         this.updateAttributesTexture(meshID);
     }
 
