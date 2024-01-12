@@ -1,5 +1,8 @@
 import {AABB} from "./bvhs.js";
 import {vec3} from "gl-matrix";
+
+import GUI from 'lil-gui';
+
 export class Triangle {
     static size = 18;
     static sectionPerTriangle = 6;
@@ -86,6 +89,8 @@ export class Mesh {
         this.triangleArray = triangleArray;
         this.triangleAttributesStart = triangleAttributesBase;
         this.AABB = AABB;
+
+        this.gui = undefined;
     }
 
     formatAttributesTexture() {
@@ -105,6 +110,10 @@ export class MeshModels {
     static triangleAttributesHeight = 512;
 
     constructor() {
+        let container = document.getElementById('flex-container');
+
+        this.meshesGUI = new GUI({title: 'Meshes', container: container});
+        this.meshesGUI.domElement.style.maxHeight = '90%';
         this.meshes = [];
 
         this.meshAttributesTextureData = new Float32Array(MeshModels.meshAttributesWidth * MeshModels.meshAttributesHeight * 3); // only rgb
@@ -133,10 +142,14 @@ export class MeshModels {
 
     addMesh(parsedMesh, bvhsManager) {
         let triangleArray = new TriangleArray(parsedMesh);
-        let meshBVH = bvhsManager.newBVH(triangleArray.triangles);
+        let meshBVH = bvhsManager.createBVH(triangleArray.triangles);
         let meshID = this.meshes.length;
         let AABB = bvhsManager.getAABB(meshBVH);
-        this.meshes.push(new Mesh(meshID, parsedMesh.name, meshBVH, triangleArray, this._newTriangleAttributesBase(triangleArray.triangles.length), AABB));
+
+        let mesh = new Mesh(meshID, parsedMesh.name, meshBVH, triangleArray, this._newTriangleAttributesBase(triangleArray.triangles.length), AABB);
+        mesh.gui = this.meshesGUI.addFolder(`ID:${this.meshes.length} - ` +mesh.name);
+        mesh.gui.add(mesh.triangleArray.triangles, 'length').name('Triangle Count').disable();
+        this.meshes.push(mesh);
         this.updateAttributesTexture(meshID);
     }
 

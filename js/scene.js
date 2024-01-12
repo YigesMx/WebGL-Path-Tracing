@@ -2,11 +2,12 @@ import {AABB, BVHs} from "./bvhs.js";
 import {mat4, vec3, vec4} from "gl-matrix";
 import {MeshModels} from "./meshes.js";
 
+import GUI from 'lil-gui';
+
 export class Material {
     static size = 12;
     static sectionsPerMaterial = 3; // 3 sections per material
-    constructor(id,
-                name = 'new material',
+    constructor(name = 'new material',
                 color= [0.9, 0.9, 0.9],
                 reflective = false,
                 reflectivity = 1.0,
@@ -14,7 +15,7 @@ export class Material {
                 indexOfRefraction = 1.0,
                 emittance = 100.0,
                 subsurfaceScatter = false) {
-        this.id = id;
+        this.id = undefined;
         this.name = name;
         this.color = color;
         this.reflective = reflective;
@@ -23,6 +24,8 @@ export class Material {
         this.indexOfRefraction = indexOfRefraction;
         this.emittance = emittance;
         this.subsurfaceScatter = subsurfaceScatter;
+
+        this.gui = undefined;
     }
 
     formatAttributesTexture(){
@@ -50,8 +53,7 @@ export class Material {
 export class Obj {
     static size = 12;
     static sectionsPerObj = 3; // 3 sections per obj
-    constructor(id,
-                name = 'new object',
+    constructor(name = 'new object',
                 objType = 'sphere',
                 pos = [0, 0, 0],
                 scale = [1, 1, 1],
@@ -59,7 +61,8 @@ export class Obj {
                 materialID = 0,
                 meshID = 0,
                 meshAABB = null) {
-        this.id = id;
+        this.id = undefined;
+
         this.name = name;
         if (objType === 'sphere' || objType === 'cube' || objType === 'plane' || objType === 'mesh') {
             this.objType = objType;
@@ -72,6 +75,8 @@ export class Obj {
         this.materialID = materialID;
         this.meshID = meshID;
         this.meshAABB = meshAABB;
+
+        this.gui = undefined;
     }
 
     getObjTypeID(){
@@ -179,47 +184,212 @@ export class Scene {
 
     // static objSectionsPerObj = 3; // 3 sections per obj
     // static materialSectionsPerMaterial = 3; // 3 sections per material
-    constructor() {
+    constructor(onChangeCallbacks = [], parsedMeshes) {
+        this.onChangeCallbacks = onChangeCallbacks;
+
+        // ==== BVHs ====
+        this.bvhsManager = new BVHs();
+        this.rootBVH = undefined;
+
+        // ===== Meshes =====
+        this.meshModelsManager = new MeshModels();
+        this.addMeshes(parsedMeshes);
+
+        let container = document.getElementById('flex-container');
+
+        // ===== Materials =====
+        this.materialsGUI = new GUI({title: 'Materials', container: container});
+        this.materialsGUI.add(this, 'addDefaultMaterial').name('Add Material');
+        this.materialsGUI.domElement.style.maxHeight = '90%';
         this.materials = [];
         this.materialAttributesTextureData = new Float32Array(Scene.materialAttributesWidth * Scene.materialAttributesHeight * 4);
         // each material occupy 3 pixels (3x4 floats) in texture
         // we call a pixel as a materialSection
         // materialID = [ materialSectionID / materialSectionsPerMaterial ]
 
+        // ===== Objs =====
+        this.objsGUI = new GUI({title: 'Objects', container: container});
+        this.objsGUI.add(this, 'addDefaultObj').name('Add Object');
+        this.objsGUI.domElement.style.maxHeight = '90%';
         this.objs = [];
         this.objAttributesTextureData = new Float32Array(Scene.objAttributesWidth * Scene.objAttributesHeight * 4);
         // each obj occupy 3 pixels (3x4 floats) in texture
         // we call a pixel as a objectSection
         // objID = [ objSectionID / objSectionsPerObj ]
-
-        this.bvhsManager = new BVHs();
-        this.rootBVH = this.bvhsManager.newBVH(this.objs);
-
-        this.meshModelsManager = new MeshModels();
     }
 
+    onChange(flushRootBVH = false){
+        for(let i = 0; i < this.onChangeCallbacks.length; i++){
+            this.onChangeCallbacks[i]();
+        }
+        if(flushRootBVH){
+            this.flushRootBVH();
+        }
+    }
 
     addMaterial(material) {
+        material.id = this.materials.length;
         this.materials.push(material);
-        this.updateMaterialToAttributesTexture(material, this.materials.length - 1);
+        this.updateMaterialToAttributesTexture(material);
+
+
+        material.gui = this.materialsGUI.addFolder(`ID:${material.id} - ` + material.name);
+
+        material.gui.add(material, 'name').onChange(function () {
+            material.gui.title(`ID:${material.id} - ` + material.name);
+        });
+
+        material.gui.addColor(material, 'color').onChange(function () {
+            this.updateMaterialToAttributesTexture(material);
+            this.onChange();
+        }.bind(this));
+
+        material.gui.add(material, 'reflective').onChange(function () {
+            this.updateMaterialToAttributesTexture(material);
+            this.onChange();
+        }.bind(this));
+
+        material.gui.add(material, 'reflectivity').min(0.0).max(1.0).onChange(function () {
+            this.updateMaterialToAttributesTexture(material);
+            this.onChange();
+        }.bind(this));
+
+        material.gui.add(material, 'refractive').onChange(function () {
+            this.updateMaterialToAttributesTexture(material);
+            this.onChange();
+        }.bind(this));
+
+        material.gui.add(material, 'indexOfRefraction').min(1.0).max(3.0).onChange(function () {
+            this.updateMaterialToAttributesTexture(material);
+            this.onChange();
+        }.bind(this));
+
+        material.gui.add(material, 'emittance').min(0.0).max(100.0).onChange(function () {
+            this.updateMaterialToAttributesTexture(material);
+            this.onChange();
+        }.bind(this));
     }
 
-    updateMaterialToAttributesTexture(material, id) {
+    addDefaultMaterial(){
+        this.addMaterial(new Material());
+        this.onChange();
+    }
+
+    updateMaterialToAttributesTexture(material) {
         let array = material.formatAttributesTexture();
         for(let i = 0; i < Material.size; i++) {
-            this.materialAttributesTextureData[Material.size * id + i] = array[i];
+            this.materialAttributesTextureData[Material.size * material.id + i] = array[i];
         }
     }
 
     addObj(obj) {
+        obj.id = this.objs.length;
         this.objs.push(obj);
         this.updateObjToAttributesTexture(obj, this.objs.length - 1);
+
+        obj.gui = this.objsGUI.addFolder(obj.name);
+
+        obj.gui.add(obj, 'name').onChange(function () {
+            obj.gui.title(obj.name);
+        });
+
+        obj.gui.add(obj, 'objType', ['sphere', 'plane', 'cube', 'mesh']).onChange(function () {
+            this.updateObjToAttributesTexture(obj);
+            this.onChange(true);
+        }.bind(this));
+
+        obj.gui.add(obj.pos, '0', -15, 15).name('pos - x').onChange(function () {
+            this.updateObjToAttributesTexture(obj);
+            this.onChange(true);
+        }.bind(this));
+
+        obj.gui.add(obj.pos, '1', -15, 15).name('pos - y').onChange(function () {
+            this.updateObjToAttributesTexture(obj);
+            this.onChange(true);
+        }.bind(this));
+
+        obj.gui.add(obj.pos, '2', -15, 15).name('pos - z').onChange(function () {
+            this.updateObjToAttributesTexture(obj);
+            this.onChange(true);
+        }.bind(this));
+
+        obj.gui.add(obj.scale, '0', 0.1, 20).name('scale - x').onChange(function () {
+            this.updateObjToAttributesTexture(obj);
+            this.onChange(true);
+        }.bind(this));
+
+        obj.gui.add(obj.scale, '1', 0.1, 20).name('scale - y').onChange(function () {
+            this.updateObjToAttributesTexture(obj);
+            this.onChange(true);
+        }.bind(this));
+
+        obj.gui.add(obj.scale, '2', 0.1, 20).name('scale - z').onChange(function () {
+            this.updateObjToAttributesTexture(obj);
+            this.onChange(true);
+        }.bind(this));
+
+        obj.gui.add(obj.rotation, '0', -180, 180).name('rotation - x').onChange(function () {
+            this.updateObjToAttributesTexture(obj);
+            this.onChange(true);
+        }.bind(this));
+
+        obj.gui.add(obj.rotation, '1', -180, 180).name('rotation - y').onChange(function () {
+            this.updateObjToAttributesTexture(obj);
+            this.onChange(true);
+        }.bind(this));
+
+        obj.gui.add(obj.rotation, '2', -180, 180).name('rotation - z').onChange(function () {
+            this.updateObjToAttributesTexture(obj);
+            this.onChange(true);
+        }.bind(this));
+
+        obj.gui.add(obj, 'materialID').name('materialID').onFinishChange(function () {
+            if(obj.materialID < 0|| obj.materialID >= this.materials.length){
+                obj.materialID = 0;
+                obj.gui.controllers[11].updateDisplay();
+            }
+            this.updateObjToAttributesTexture(obj);
+            this.onChange(true);
+        }.bind(this));
+
+        obj.gui.add(obj, 'meshID').name('meshID').onFinishChange(function () {
+            if(obj.meshID < 0|| obj.meshID >= this.meshModelsManager.meshes.length){
+                obj.meshID = 0;
+                obj.gui.controllers[12].updateDisplay();
+            }
+            obj.meshAABB = this.meshModelsManager.getMeshAABB(obj.meshID)
+            this.updateObjToAttributesTexture(obj);
+            this.onChange(true);
+        }.bind(this));
+
+        obj.gui.add({del(){}},'del').name('Delete').onChange(function () {
+            this.deleteObj(obj.id);
+            this.onChange(true);
+            obj.gui.destroy();
+            //update all objs gui controller
+            for(let i = 0; i < this.objs.length; i++){
+                this.objs[i].gui.title(`ID:${this.objs[i].id} - ` + this.objs[i].name);
+            }
+        }.bind(this));
     }
 
-    updateObjToAttributesTexture(obj, id) {
+    addDefaultObj(){
+        this.addObj(new Obj());
+        this.onChange(true);
+    }
+
+    updateObjToAttributesTexture(obj) {
         let array = obj.formatAttributesTexture();
         for(let i = 0; i < Obj.size; i++) {
-            this.objAttributesTextureData[Obj.size * id + i] = array[i];
+            this.objAttributesTextureData[Obj.size * obj.id + i] = array[i];
+        }
+    }
+
+    deleteObj(id) {
+        this.objs.splice(id, 1);
+        for(let i = id; i < this.objs.length; i++){
+            this.objs[i].id = i;
+            this.updateObjToAttributesTexture(this.objs[i], i);
         }
     }
 
@@ -228,6 +398,10 @@ export class Scene {
     }
 
     flushRootBVH(){
-        this.rootBVH = this.bvhsManager.newBVH(this.objs);
+        if(this.rootBVH === undefined){
+            this.rootBVH = this.bvhsManager.createBVH(this.objs);
+        }else{
+            this.bvhsManager.createBVH(this.objs, this.rootBVH);
+        }
     }
 }

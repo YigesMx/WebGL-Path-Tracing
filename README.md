@@ -1,6 +1,6 @@
 # Path Tracing
 
-该项目基于该 [项目](https://github.com/wulinjiansheng/WebGL_PathTracer/tree/master) 进行了完全重构，并新增了许多功能。
+该项目基于此 [项目](https://github.com/wulinjiansheng/WebGL_PathTracer/tree/master) 进行了完全重构，并新增了许多功能。
 
 原项目实现了：
 

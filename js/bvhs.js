@@ -237,7 +237,7 @@ export class BVHs {
         }
     }
 
-    BFS(rootID){
+    BFS(rootID){ // for debug
         let queue = [[rootID, 0]];
         while(queue.length > 0){
             let queFront = queue.shift();
@@ -261,7 +261,9 @@ export class BVHs {
         }
     }
 
-    newBVH(elementsWithAABB){
+    createBVH(elementsWithAABB, root){
+        // 注意如果指定了root，则会从root开始创建，并强制覆盖后面的所有内容，如果新BVH比原来位置的BVH长，则会将更后面的BVH覆盖，导致问题
+        // 所以这里约定只对最后一个 BVH 执行这个“更新”操作，否则建议完全重建所有 BVHs
 
         if (elementsWithAABB.length === 0) {
             return -1;
@@ -272,7 +274,9 @@ export class BVHs {
             elements.push([i, elementsWithAABB[i].getAABB()]);
         }
 
-        let root = this._newNode();
+        if(root === undefined){
+            root = this._newNode();
+        }
         this._build(elements, root);
 
         return root;

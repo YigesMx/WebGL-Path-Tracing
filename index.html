@@ -1,4 +1,5 @@
-<html>
+<!DOCTYPE html>
+<html lang="zh-cn">
 <head>
     <title>Path Tracing</title>
     <meta charset="utf-8">
@@ -10,45 +11,23 @@
         <h1>Path Tracing</h1>
 		Made by <a href="#">Yiges.M.x.</a>
     </div>
-    <div id="canvasContainer">
-        <canvas id="canvas" width="512" height="512" tabindex="1"></canvas>
-        <div id="message"></div>
-    </div>
-    <div id="controller">
-<!--		<div id="icon" onclick="toggleContorller();"></div>-->
-<!--        <div id = "gui-left">-->
-<!--            <div class="buttons">-->
-<!--                <input type="button" value="Add Cube" onclick="addCube();" />-->
-<!--                <input type="button" value="Add Sphere" onclick="addSphere();" />-->
-<!--            </div>-->
-<!--        </div>-->
-<!--        <div id = "gui-right">-->
-<!--            <div class="buttons">-->
-<!--                <input type="button" value="Default Scene" onclick="defaultScene();" />-->
-<!--		        <input type="button" value="Resize" onclick="resize();" />-->
-<!--            </div>-->
-<!--        </div>-->
-<!--		<div id ="info">-->
-<!--			Path tracing is a method of rendering images faithful to reality. The core algorithm of this WebGL Path Tracer is implemented in GLSL fragment shader. Each ray bounces in the scene around five times.<br/><br/>A <a href="https://www.youtube.com/watch?v=Hm6VyPIbKP0&feature=youtu.be" target="_blank">Demo</a> is uploaded in YouTube and code is provided in <a href="https://github.com/wulinjiansheng/WebGL_PathTracer" target="_blank">GitHub</a>.-->
-<!--			<h3>Features:</h3>-->
-<!--			<ul>-->
-<!--				<li>Diffuse and Blinn-Phong</li>-->
-<!--				<li>Fresnel Reflection and Refraction</li>-->
-<!--				<li>Subsurface Scattering</li>-->
-<!--				<li>Super Sampling Anti-aliasing</li>-->
-<!--				<li>Intersection</li>-->
-<!--			</ul>-->
-<!--			<h3>Interaction:</h3>-->
-<!--			<ul>-->
-<!--				<li>Space: pause toggle</li>-->
-<!--				<li>Left button: rotate scene</li>-->
-<!--				<li>Middle button: translate scene</li>-->
-<!--				<li>Right button: zoom in/ out</li>-->
-<!--				<li>Control panel: add objects and change attributes</li>-->
-<!--			</ul>-->
-<!--		</div>-->
+    <div id="flex-container">
+        <div id="canvasContainer">
+            <div class="canvasInnerContainer">
+                <canvas id="canvas" width="512" height="512" tabindex="1"></canvas>
+                <div id="message"></div>
+            </div>
+        </div>
+        <div id = "time"><h3 style="text-align: center">Loading Time</h3><br/></div>
+        <div id = "inst">
+            <h3 style="text-align: center">Interaction</h3>
+                Space: Pause <br/>
+                Left button: Rotate<br/>
+                Middle button: Translate<br/>
+                Right button: Zoom<br/>
+            </ul>
+        </div>
 	</div>
-	<div id = "time"></div>
 
     <script src="js/main.js" type="module"></script>
 </body>

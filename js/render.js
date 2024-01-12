@@ -8,6 +8,8 @@ import { MeshModels, Mesh, Triangle } from "./meshes.js";
 
 import {loadTexture} from "./utils/utils.js";
 
+import GUI from 'lil-gui';
+
 export class Renderer{
 	/************************* render properties *************************/
 
@@ -18,6 +20,9 @@ export class Renderer{
 	scene;
 	viewConfig;
 	interactions;
+
+	width;
+	height;
 
 	/************************* shader properties *************************/
 
@@ -117,7 +122,18 @@ export class Renderer{
 		this.target_canvas = document.getElementById(canvasID);
 		this.target_message = document.getElementById(messageID);
 		this.initGL(this.target_canvas, this.target_message);
-
+		// gui
+		this.viewGUI = new GUI({title: 'View', container: document.getElementById('flex-container')});
+		this.viewGUI.domElement.style.maxHeight = '90%';
+		this.viewGUI.add({enable: false}, 'enable').name('Enable SSAA').onChange((value) => {
+			this.enableSSAA = value ? 1 : 0;
+			this.resetIterations();
+		});
+		this.viewGUI.add({resolution: [512,512]}, 'resolution', [[256,256], [512,512], [720, 720]]).name('Resolution').onChange((value) => {
+			this.target_canvas.width = value[0];
+			this.target_canvas.height = value[1];
+			this.resize();
+		});
 		end = Date.now();
 		document.getElementById("time").innerHTML +=  "Initialize WebGL: " + (end-begin).toString() + " ms<br/>";
 
@@ -130,15 +146,6 @@ export class Renderer{
 
 
 		begin = Date.now();
-		// init scene
-		this.scene = new Scene();
-		// init view
-		this.viewConfig = new ViewConfig(
-			Math.PI /6, 0.0, 13.5,
-			vec3.create(),
-			vec3.fromValues(0.0, 1.0, 0.0),
-			45.0
-		);
 		// init shader
 		this.initShaders(shaderFiles);
 		// init buffer
@@ -149,8 +156,17 @@ export class Renderer{
 
 
 		begin = Date.now();
+		// init scene
+		this.scene = new Scene([this.resetIterations.bind(this)], parsedMeshes);
+		// init view
+		this.viewConfig = new ViewConfig(
+			Math.PI /6, 0.0, 13.5,
+			vec3.create(),
+			vec3.fromValues(0.0, 1.0, 0.0),
+			45.0
+		);
 		// init default scene
-		initDefaultScene(this.scene, parsedMeshes);
+		initDefaultScene(this.scene);
 
 		end = Date.now();
 		document.getElementById("time").innerHTML += "Load Scene: " + (end-begin).toString() + " ms";
@@ -327,8 +343,8 @@ export class Renderer{
 	/************************* render *************************/
 
 	resize() {
-		this.target_canvas.width = 512//width;
-		this.target_canvas.height = 512//height;
+		// this.target_canvas.width = 512;
+		// this.target_canvas.height = 512;
 
 		this.gl.viewport(0, 0, this.target_canvas.width, this.target_canvas.height);
 
@@ -466,7 +482,6 @@ export class Renderer{
 			// end mesh
 
 			// env
-			// this.gl.uniform2f(this.pt_envTextureSize_uniformLocation, this.scene.envTexture.width, this.scene.envTexture.height);
 			this.gl.activeTexture(this.gl.TEXTURE7);  //env
 			this.gl.bindTexture(this.gl.TEXTURE_2D, this.envTexture);
 			this.gl.generateMipmap(this.gl.TEXTURE_2D);

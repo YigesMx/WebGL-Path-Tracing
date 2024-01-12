@@ -4,9 +4,12 @@ import {Material, Obj} from "./scene.js";
 import OBJFile from 'obj-file-parser';
 import {wait_fetch_urls} from "./utils/utils.js";
 
-window.onload = runGL;
+// import {gui} from "./gui.js";
 
-async function runGL() {
+window.onload = main;
+// window.gui = gui;
+
+async function main() {
 
 	let meshFiles = await wait_fetch_urls([
 		{
@@ -53,14 +56,10 @@ async function runGL() {
 	render.render_loop();
 }
 
-function initDefaultScene(scene, parsedMeshes) {
-
-	// ===== meshes =====
-	scene.addMeshes(parsedMeshes);
+function initDefaultScene(scene) {
 
 	// ===== materials =====
 	scene.addMaterial(new Material(
-		0,
 		'light',
 		[1.0, 1.0, 1.0],
 		false,
@@ -72,7 +71,6 @@ function initDefaultScene(scene, parsedMeshes) {
 	));
 
 	scene.addMaterial(new Material(
-		1,
 		'white diffuse',
 		[1.0, 1.0, 1.0],
 		false,
@@ -84,7 +82,6 @@ function initDefaultScene(scene, parsedMeshes) {
 	));
 
 	scene.addMaterial(new Material(
-		2,
 		'red diffuse',
 		[0.75, 0.25, 0.25],
 		false,
@@ -96,7 +93,6 @@ function initDefaultScene(scene, parsedMeshes) {
 	));
 
 	scene.addMaterial(new Material(
-		3,
 		'blue diffuse',
 		[0.25, 0.25, 0.75],
 		false,
@@ -108,7 +104,6 @@ function initDefaultScene(scene, parsedMeshes) {
 	));
 
 	scene.addMaterial(new Material(
-		4,
 		'green diffuse',
 		[0.25, 0.75, 0.25],
 		false,
@@ -120,7 +115,6 @@ function initDefaultScene(scene, parsedMeshes) {
 	));
 
 	scene.addMaterial(new Material(
-		5,
 		'metal',
 		[0.9, 0.9, 0.9],
 		true,
@@ -132,7 +126,6 @@ function initDefaultScene(scene, parsedMeshes) {
 	));
 
 	scene.addMaterial(new Material(
-		6,
 		'metal diffuse',
 		[0.9, 0.9, 0.9],
 		true,
@@ -144,7 +137,6 @@ function initDefaultScene(scene, parsedMeshes) {
 	));
 
 	scene.addMaterial(new Material(
-		7,
 		'glass',
 		[1.0, 1.0, 1.0],
 		true,
@@ -156,7 +148,6 @@ function initDefaultScene(scene, parsedMeshes) {
 	));
 
 	scene.addMaterial(new Material(
-		8,
 		'glass diffuse',
 		[1.0, 1.0, 1.0],
 		true,
@@ -168,9 +159,8 @@ function initDefaultScene(scene, parsedMeshes) {
 	))
 
 	scene.addMaterial(new Material(
-		9,
-		'desk diffuse',
-		[0.5, 0.5, 0.1],
+		'yellow diffuse',
+		[0.7, 0.7, 0.05],
 		false,
 		1.0,
 		false,
@@ -181,20 +171,8 @@ function initDefaultScene(scene, parsedMeshes) {
 
 	// ===== objs =====
 
-	// light
-	// scene.addObj(new Obj(
-	// 	0,
-	// 	'light 1',
-	// 	'cube',
-	// 	[0.0, 4.95, 0.0],
-	// 	[3.8, 0.1, 3.8],
-	// 	[0.0, 0.0, 0.0],
-	// 	1
-	// ));
-
 	scene.addObj(new Obj(
-		1,
-		'light 2',
+		'light',
 		'plane',
 		[-3.5, 4.0, 5.0],
 		[2, 1, 2],
@@ -207,7 +185,6 @@ function initDefaultScene(scene, parsedMeshes) {
 	let WallTrans = 5.0;
 
 	scene.addObj(new Obj(
-		2,
 		'wall 3',
 		'plane',
 		[-WallTrans, 0.0, 0.0],
@@ -217,7 +194,6 @@ function initDefaultScene(scene, parsedMeshes) {
 	));
 
 	scene.addObj(new Obj(
-		3,
 		'wall 4',
 		'plane',
 		[WallTrans, 0.0, 0.0],
@@ -227,7 +203,6 @@ function initDefaultScene(scene, parsedMeshes) {
 	));
 
 	scene.addObj(new Obj(
-		4,
 		'wall 6',
 		'plane',
 		[0.0, -WallTrans, 0.0],
@@ -238,7 +213,6 @@ function initDefaultScene(scene, parsedMeshes) {
 
 	// sphere white diffuse
 	scene.addObj(new Obj(
-		5,
 		'sphere green diffuse',
 		'sphere',
 		[-2.0, 0.0, 0.0],
@@ -249,7 +223,6 @@ function initDefaultScene(scene, parsedMeshes) {
 
 	// sphere metal
 	scene.addObj(new Obj(
-		6,
 		'sphere metal',
 		'sphere',
 		[0.0, 0.0, 0.0],
@@ -259,7 +232,6 @@ function initDefaultScene(scene, parsedMeshes) {
 	));
 
 	scene.addObj(new Obj(
-		7,
 		'sphere metal diffuse',
 		'sphere',
 		[1.0, 0.0, 2.0],
@@ -270,7 +242,6 @@ function initDefaultScene(scene, parsedMeshes) {
 
 	// sphere glass
 	scene.addObj(new Obj(
-		8,
 		'sphere glass',
 		'sphere',
 		[2.0, 0.0, 0.0],
@@ -280,7 +251,6 @@ function initDefaultScene(scene, parsedMeshes) {
 	));
 
 	scene.addObj(new Obj(
-		9,
 		'sphere glass',
 		'sphere',
 		[-1.0, 0.0, 2.0],
@@ -291,7 +261,6 @@ function initDefaultScene(scene, parsedMeshes) {
 
 	// suzanne
 	scene.addObj(new Obj(
-		10,
 		'suzanne',
 		'mesh',
 		[-1.5, 1.0, -2.5],
@@ -304,7 +273,6 @@ function initDefaultScene(scene, parsedMeshes) {
 
 	// //icosahedron
 	scene.addObj(new Obj(
-		11,
 		'icosahedron',
 		'mesh',
 		[1.5, 1.0, -2.5],
@@ -317,7 +285,6 @@ function initDefaultScene(scene, parsedMeshes) {
 
 	// desk
 	scene.addObj(new Obj(
-		12,
 		'desk',
 		'cube',
 		[0.0, -1.0, 0.0],

@@ -3,12 +3,15 @@ precision highp float;
 #ifndef PI
 #define PI 3.1415926535
 #endif
+
 #ifndef INF
 #define INF 2147483647
 #endif
+
 #ifndef INF_F
 #define INF_F 2147483647.0
 #endif
+
 #ifndef EPS
 #define EPS 0.00001
 #endif
@@ -394,7 +397,7 @@ bool intersectMeshBVH(int meshBVHNodeID, inout Ray ray, inout Intersection final
 
 			if (tmin > closestIntersectionDistance) continue;
 
-			if(leftChild < 0 && rightChild < 0) {
+			if(leftChild <= 0 && rightChild <= 0) {
 
 				int start = int(getElementIDMap(nodeID).x);
 				int end = start + int(getElementIDMap(nodeID).y);
@@ -409,11 +412,11 @@ bool intersectMeshBVH(int meshBVHNodeID, inout Ray ray, inout Intersection final
 
 			} else {
 
-				if(leftChild >= 0) {
+				if(leftChild > 0) {
 					stack[++stackTop] = leftChild;
 				}
 
-				if(rightChild >= 0) {
+				if(rightChild > 0) {
 					stack[++stackTop] = rightChild;
 				}
 			}
@@ -785,12 +788,13 @@ void main(void){
 	ray.IOR = 1.0;
 
     if(enableSSAA>0){ // jitter
+		ray.direction = normalize(initRayDirection);
     	float dis = (0.0 - cameraPos.z)/ ray.direction.z;
     	vec3 initPixelVec = ray.origin + dis * ray.direction;
 		float random1 = sin(randOnVec3WithNoiseAndSeed(initRayDirection, ray.direction*vec3(12.9898, 78.233, 151.7182), time));
 		float random2 = cos(randOnVec3WithNoiseAndSeed(initRayDirection, ray.direction*vec3(63.7264, 10.873, 623.6736), time));
-        float u = random1/2.0/displayBufferTextureWidth;
-        float v = random2/2.0/displayBufferTextureHeight; // TODO: 考虑加入可传入的感受野参数
+        float u = (random1)*2.0/displayBufferTextureWidth;
+        float v = (random2)*2.0/displayBufferTextureHeight; // TODO: 考虑加入可传入的感受野参数
         initPixelVec += vec3(u,v,0.0);
 
         ray.direction = normalize( initPixelVec - cameraPos);
