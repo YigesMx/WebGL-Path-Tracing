@@ -4,10 +4,7 @@ import {Material, Obj} from "./scene.js";
 import OBJFile from 'obj-file-parser';
 import {wait_fetch_urls} from "./utils/utils.js";
 
-// import {gui} from "./gui.js";
-
 window.onload = main;
-// window.gui = gui;
 
 async function main() {
 
