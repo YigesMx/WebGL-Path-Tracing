@@ -197,6 +197,20 @@ export class Renderer{
 		// init interact
 		this.interactions = new Interactions(this.viewConfig, this.resetIterations.bind(this));
 		this.interactions.bind_interactions(this.target_canvas);
+
+		let debug_shader_ext = this.gl.getExtension('WEBGL_debug_shaders');
+		if (debug_shader_ext) {
+			console.log("WEBGL_debug_shaders enabled")
+		}
+		
+		//debug
+		let fragmentShader = this.gl.createShader(this.gl.FRAGMENT_SHADER);
+		this.gl.shaderSource(fragmentShader, shaderFiles['utils'] + shaderFiles['ptFrag']);
+		this.gl.compileShader(fragmentShader);
+
+		console.log(debug_shader_ext.getTranslatedShaderSource(fragmentShader));
+
+		console.log("Renderer initialized");
 	}
 
 	initGL(canvas, message){
@@ -217,13 +231,13 @@ export class Renderer{
 		this.gl.enable(this.gl.DEPTH_TEST);
 	}
 
-	initShaders(shaders_file) {
+	initShaders(shaderFiles) {
 
-		let ptVert = shaders_file['ptVert'];
-		let ptFrag = shaders_file['ptFrag'];
-		let displayVert = shaders_file['displayVert'];
-		let displayFrag = shaders_file['displayFrag'];
-		let utils = shaders_file['utils'];
+		let ptVert = shaderFiles['ptVert'];
+		let ptFrag = shaderFiles['ptFrag'];
+		let displayVert = shaderFiles['displayVert'];
+		let displayFrag = shaderFiles['displayFrag'];
+		let utils = shaderFiles['utils'];
 
 		//===== pt shader =====
 		this.ptShaderProgram = createProgram(this.gl, utils + ptVert, utils + ptFrag, this.target_message);
