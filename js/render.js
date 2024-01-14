@@ -163,7 +163,7 @@ export class Renderer{
 			Math.PI /6, 0.0, 13.5,
 			vec3.create(),
 			vec3.fromValues(0.0, 1.0, 0.0),
-			45.0
+			Math.PI /3
 		);
 		// init default scene
 		initDefaultScene(this.scene);
@@ -204,7 +204,7 @@ export class Renderer{
 		let utils = shaders_file['utils'];
 
 		//===== pt shader =====
-		this.ptShaderProgram = createProgram(this.gl, ptVert, utils + ptFrag, this.target_message);
+		this.ptShaderProgram = createProgram(this.gl, utils + ptVert, utils + ptFrag, this.target_message);
 		//Vertex Shader
 		this.pt_vertexPos_attributeLocation = this.gl.getAttribLocation(this.ptShaderProgram, "vertexPos");
 		this.gl.enableVertexAttribArray(this.pt_vertexPos_attributeLocation);

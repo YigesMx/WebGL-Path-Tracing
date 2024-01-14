@@ -19,7 +19,6 @@ precision highp float;
 uniform float time;
 uniform int objNums;
 uniform vec3 cameraPos;
-uniform int enableSSAA;
 
 uniform float iterations;
 
@@ -149,12 +148,12 @@ bool intersectSphere(Object obj, in Ray ray, out Intersection intersect) {
 	if(sqrt(dot(rayInObjCoord.origin, rayInObjCoord.origin)) < radius){
 		sign=-1.0;
 		intersect.isInsideOut = true;
-		return false;
+//		return false;
 	}else{
 		intersect.isInsideOut = false;
 	}
 
-    float vDotDirection = dot(rayInObjCoord.origin, rayInObjCoord.direction);
+    float vDotDirection = dot(rayInObjCoord.origin, rayInObjCoord.direction); //
 	float radicand = vDotDirection * vDotDirection - (dot(rayInObjCoord.origin, rayInObjCoord.origin) - radius * radius);
 	if (radicand < 0.0){
 		return false;
@@ -177,6 +176,7 @@ bool intersectSphere(Object obj, in Ray ray, out Intersection intersect) {
 	intersect.intersectPos = (obj.model *  vec4(getPointOnRay(rayInObjCoord, t), 1.0)).xyz;
 	vec3 realOrigin = (obj.model * vec4(0,0,0,1)).xyz;
 	intersect.intersectNormal  = sign * vec3( normalize((obj.transInvModel * vec4((intersect.intersectPos - realOrigin), 0.0)).xyz) ); // fix normal with model matrix
+
 	intersect.intersectDistance = length(ray.origin - intersect.intersectPos);
     return true;
 }
@@ -815,22 +815,8 @@ void main(void){
 
 	Ray ray;
 	ray.origin = cameraPos.xyz;
+	ray.direction = normalize( initRayDirection );
 	ray.IOR = 1.0;
-
-    if(enableSSAA>0){ // jitter
-		ray.direction = normalize(initRayDirection);
-    	float dis = (0.0 - cameraPos.z)/ ray.direction.z;
-    	vec3 initPixelVec = ray.origin + dis * ray.direction;
-		float random1 = sin(randOnVec3WithNoiseAndSeed(initRayDirection, ray.direction*vec3(12.9898, 78.233, 151.7182), time));
-		float random2 = cos(randOnVec3WithNoiseAndSeed(initRayDirection, ray.direction*vec3(63.7264, 10.873, 623.6736), time));
-        float u = (random1)*2.0/displayBufferTextureWidth;
-        float v = (random2)*2.0/displayBufferTextureHeight; // TODO: 考虑加入可传入的感受野参数
-        initPixelVec += vec3(u,v,0.0);
-
-        ray.direction = normalize( initPixelVec - cameraPos);
-	}else{
-		ray.direction = normalize( initRayDirection);
-	}
 
 	vec3 finalColor = vec3(0.0);
 

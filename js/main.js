@@ -11,8 +11,8 @@ async function main() {
 	let meshFiles = await wait_fetch_urls([
 		{
 			name: 'icosahedron',
-			url: './models/sphere_triangle.obj'
-			// url: './models/icosahedron.obj'
+			// url: './models/sphere_triangle.obj'
+			url: './models/icosahedron.obj'
 		},
 		{
 			name: 'suzanne',
