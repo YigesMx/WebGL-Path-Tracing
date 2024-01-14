@@ -151,7 +151,7 @@ bool intersectSphere(in Object obj, in Ray ray, inout Intersection intersect) {
 	if(sqrt(dot(rayInObjCoord.origin, rayInObjCoord.origin)) < radius){
 		sign=-1.0;
 		intersect.isInsideOut = true;
-		//		return false;
+//		return false;
 	}else{
 		intersect.isInsideOut = false;
 	}
@@ -194,7 +194,7 @@ bool intersectCube(in Object obj, in Ray ray, inout Intersection intersect) {
 	if(abs(rayInObjCoord.origin.x)-0.5<0.0&&abs(rayInObjCoord.origin.y)-0.5<0.0&&abs(rayInObjCoord.origin.z)-0.5<0.0){
 		sign = -1.0;
 		intersect.isInsideOut = true;
-		//		return false;
+//		return false;
 	}else{
 		intersect.isInsideOut = false;
 	}
@@ -345,7 +345,7 @@ bool intersectTriangle(in int triangleID, in Ray ray, inout Intersection interse
 	if(dot(intersect.intersectNormal, ray.direction) > 0.0){
 		intersect.intersectNormal = -intersect.intersectNormal;
 		intersect.isInsideOut = true;
-		//		return false;
+//		return false;
 	}else{
 		intersect.isInsideOut = false;
 	}
@@ -473,6 +473,7 @@ bool intersectMesh(in Object meshObj, in Ray ray, inout Intersection intersect) 
 		intersect.intersectPos = (meshObj.model *  vec4(tempIntersect.intersectPos, 1.0)).xyz;
 		intersect.intersectNormal = normalize((meshObj.transInvModel * vec4(tempIntersect.intersectNormal, 0.0)).xyz);
 		intersect.intersectDistance = length(ray.origin - intersect.intersectPos);
+		intersect.isInsideOut = tempIntersect.isInsideOut;
 
 		return true;
 	}else{
@@ -695,7 +696,7 @@ bool intersectRootBVH(in int rootBVHNodeID, in Ray ray, inout Intersection final
 const float shift = 0.01;
 vec3 pathTrace(in Ray currentRay, inout vec3 finalColor){
 
-	vec3 tempColor = vec3(1.0);
+	vec3 tempColor = vec3(1.0, 1.0, 1.0);
 
 	for (int i = 0; i < maxBounces; ++i) {
 
@@ -721,7 +722,7 @@ vec3 pathTrace(in Ray currentRay, inout vec3 finalColor){
 			if (obj.refractive == 0 && obj.reflective == 0){ // 仅漫反射
 
 				tempColor *= obj.color;
-				finalColor = tempColor;
+//				finalColor = tempColor;
 
 				newRay.direction = normalize(calculateRandomDirectionInHemisphere(intersect.intersectNormal, initRayDirection, seed + randOnVec2(intersect.intersectPos.xy)));
 				newRay.origin = intersect.intersectPos + shift * newRay.direction;
@@ -740,7 +741,6 @@ vec3 pathTrace(in Ray currentRay, inout vec3 finalColor){
 					float objIOR = obj.IOR;
 
 					float IORratio;
-					// float reflectRange = -1.0;
 					if(isInsideOut){
 						IORratio = objIOR/1.0;
 					}else{
@@ -763,11 +763,11 @@ vec3 pathTrace(in Ray currentRay, inout vec3 finalColor){
 
 						newRay.origin = intersect.intersectPos + shift * newRay.direction;
 
-						//						if(obj.subsurfaceScatter > 0){ // 若有次表面散射，则加入次表面散射，目前是写死的模拟默认场景中的光源，物体透光度等都是写死的
-						//							float random = randOnVec2(intersect.intersectPos.xy);
-						//							tempColor *= subScatterFS(intersect, obj, random);
-						//							finalColor = tempColor;
-						//						}
+//						if(obj.subsurfaceScatter > 0){ // 若有次表面散射，则加入次表面散射，目前是写死的模拟默认场景中的光源，物体透光度等都是写死的
+//							float random = randOnVec2(intersect.intersectPos.xy);
+//							tempColor *= subScatterFS(intersect, obj, random);
+//							finalColor = tempColor;
+//						}
 
 					} else { // 折射
 						vec3 refractDirection = refract(currentRay.direction, intersect.intersectNormal, IORratio);
@@ -779,11 +779,11 @@ vec3 pathTrace(in Ray currentRay, inout vec3 finalColor){
 
 						newRay.origin = intersect.intersectPos + shift * newRay.direction;
 
-						//						if(isInsideOut){ //out object
-						//							newRay.IOR /= objIOR;
-						//						} else { //into object
-						//							newRay.IOR *= objIOR;
-						//						}
+//						if(isInsideOut){ //out object
+//							newRay.IOR /= objIOR;
+//						} else { //into object
+//							newRay.IOR *= objIOR;
+//						}
 
 						if(isInsideOut){ //out object
 							newRay.IOR = 1.0;
@@ -793,7 +793,7 @@ vec3 pathTrace(in Ray currentRay, inout vec3 finalColor){
 					}
 
 					tempColor *= obj.color; // TODO: 加入 metallic 控制玻璃自身颜色加入比例
-					finalColor = tempColor;
+//					finalColor = tempColor;
 
 				} else if(obj.reflective > 0) { // 仅反射
 
@@ -802,8 +802,7 @@ vec3 pathTrace(in Ray currentRay, inout vec3 finalColor){
 						tempColor *= subScatterFS(intersect, obj, random);
 					}
 					tempColor *= obj.color; // TODO: 加入 metallic 控制金属自身颜色加入比例
-					finalColor = tempColor;
-					//					newRay.IOR = 1.0;
+//					finalColor = tempColor;
 
 					newRay.direction = reflect(currentRay.direction, intersect.intersectNormal);
 					if(obj.reflectivity < 1.0){
@@ -818,19 +817,18 @@ vec3 pathTrace(in Ray currentRay, inout vec3 finalColor){
 
 		} else { // 无交点 - 环境光
 			vec3 envColor;
-			if(enableEnvTexture != 0){
+			if(enableEnvTexture > 0){
 				envColor = texture(envTexture, vec2(0.5 + atan(currentRay.direction.z, currentRay.direction.x) / (2.0 * PI), 0.5 - asin(currentRay.direction.y) / PI)).rgb;
 			}else{
 				envColor = vec3(0.0, 0.0, 0.0);
 			}
 			finalColor = tempColor * envColor;
 			return finalColor;
-
 		}
 
 	}
 
-	finalColor = vec3(0.0,0.0,0.0);
+	finalColor = vec3(0.0, 0.0, 0.0);
 	return finalColor;
 }
 

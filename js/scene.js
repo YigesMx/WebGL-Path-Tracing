@@ -293,7 +293,10 @@ export class Scene {
             obj.gui.title(obj.name);
         });
 
-        obj.gui.add(obj, 'objType', ['sphere', 'plane', 'cube', 'mesh']).onChange(function () {
+        obj.gui.add(obj, 'objType', ['sphere', 'plane', 'cube', 'mesh']).onChange(function (value) {
+            if(value === 'mesh'){
+                obj.meshAABB = this.meshModelsManager.getMeshAABB(obj.meshID);
+            }
             this.updateObjToAttributesTexture(obj);
             this.onChange(true);
         }.bind(this));
@@ -363,9 +366,9 @@ export class Scene {
         }.bind(this));
 
         obj.gui.add({del(){}},'del').name('Delete').onChange(function () {
+            obj.gui.destroy();
             this.deleteObj(obj.id);
             this.onChange(true);
-            obj.gui.destroy();
             //update all objs gui controller
             for(let i = 0; i < this.objs.length; i++){
                 this.objs[i].gui.title(`ID:${this.objs[i].id} - ` + this.objs[i].name);
