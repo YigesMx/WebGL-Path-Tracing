@@ -11,7 +11,8 @@ async function main() {
 	let meshFiles = await wait_fetch_urls([
 		{
 			name: 'icosahedron',
-			url: './models/icosahedron.obj'
+			url: './models/sphere_triangle.obj'
+			// url: './models/icosahedron.obj'
 		},
 		{
 			name: 'suzanne',
@@ -47,249 +48,245 @@ async function main() {
 		}
 	]);
 
-	let render = new Renderer(shaderFiles, parsedMeshes, initDefaultScene);
-	window.render = render;
+	let render = new Renderer(shaderFiles, parsedMeshes, (scene) => {
+		// ===== materials =====
+		scene.addMaterial(new Material(
+			'light',
+			[1.0, 1.0, 1.0],
+			false,
+			1.0,
+			false,
+			1.0,
+			10.0,
+			false
+		));
+
+		scene.addMaterial(new Material(
+			'white diffuse',
+			[1.0, 1.0, 1.0],
+			false,
+			1.0,
+			false,
+			1.0,
+			0.0,
+			false
+		));
+
+		scene.addMaterial(new Material(
+			'red diffuse',
+			[0.75, 0.25, 0.25],
+			false,
+			1.0,
+			false,
+			1.0,
+			0.0,
+			false
+		));
+
+		scene.addMaterial(new Material(
+			'blue diffuse',
+			[0.25, 0.25, 0.75],
+			false,
+			1.0,
+			false,
+			1.0,
+			0.0,
+			false
+		));
+
+		scene.addMaterial(new Material(
+			'green diffuse',
+			[0.25, 0.75, 0.25],
+			false,
+			1.0,
+			false,
+			1.0,
+			0.0,
+			false
+		));
+
+		scene.addMaterial(new Material(
+			'yellow diffuse',
+			[0.7, 0.7, 0.05],
+			false,
+			1.0,
+			false,
+			1.0,
+			0.0,
+			false
+		));
+
+		scene.addMaterial(new Material(
+			'metal',
+			[0.9, 0.9, 0.9],
+			true,
+			1.0,
+			false,
+			1.0,
+			0.0,
+			false
+		));
+
+		scene.addMaterial(new Material(
+			'metal diffuse',
+			[0.9, 0.9, 0.9],
+			true,
+			0.9,
+			false,
+			1.0,
+			0.0,
+			false
+		));
+
+		scene.addMaterial(new Material(
+			'glass',
+			[1.0, 1.0, 1.0],
+			true,
+			1.0,
+			true,
+			1.7,
+			0.0,
+			true
+		));
+
+		scene.addMaterial(new Material(
+			'glass diffuse',
+			[1.0, 1.0, 1.0],
+			true,
+			0.95,
+			true,
+			1.7,
+			0.0,
+			true
+		))
+
+		// ===== objs =====
+
+		// light
+		scene.addObj(new Obj(
+			'light',
+			'plane',
+			[-3.5, 4.0, 5.0],
+			[2, 1, 2],
+			[-120.0, 30.0, -20.0],
+			0
+		));
+
+		// walls
+		let WallScale = 10.0;
+		let WallTrans = 5.0;
+
+		scene.addObj(new Obj(
+			'wall left',
+			'plane',
+			[-WallTrans, 0.0, 0.0],
+			[WallScale, 1.0, WallScale],
+			[0.0, 0.0, -90.0],
+			2
+		));
+
+		scene.addObj(new Obj(
+			'wall right',
+			'plane',
+			[WallTrans, 0.0, 0.0],
+			[WallScale, 1.0, WallScale],
+			[0.0, 0.0, 90.0],
+			3
+		));
+
+		scene.addObj(new Obj(
+			'wall bottom',
+			'plane',
+			[0.0, -WallTrans, 0.0],
+			[WallScale, 1.0, WallScale],
+			[0.0, 0.0, 0.0],
+			1
+		));
+
+		// desk
+		scene.addObj(new Obj(
+			'desk',
+			'cube',
+			[0.0, -1.1, 0.0],
+			[8.0, 0.2, 6.0],
+			[0.0, 0.0, 0.0],
+			5
+		));
+
+		// sphere white diffuse
+		scene.addObj(new Obj(
+			'sphere green diffuse',
+			'sphere',
+			[-2.0, 0.0, 0.0],
+			[1.5, 1.5, 1.5],
+			[0.0, 0.0, 0.0],
+			4
+		));
+
+		// sphere metal
+		scene.addObj(new Obj(
+			'sphere metal',
+			'sphere',
+			[0.0, 0.0, 0.0],
+			[1.5, 1.5, 1.5],
+			[0.0, 0.0, 0.0],
+			6
+		));
+
+		scene.addObj(new Obj(
+			'sphere metal diffuse',
+			'sphere',
+			[1.0, 0.0, 2.0],
+			[1.5, 1.5, 1.5],
+			[0.0, 0.0, 0.0],
+			7
+		));
+
+		// sphere glass
+		scene.addObj(new Obj(
+			'sphere glass',
+			'sphere',
+			[2.0, 0.0, 0.0],
+			[1.5, 1.5, 1.5],
+			[0.0, 0.0, 0.0],
+			8
+		));
+
+		scene.addObj(new Obj(
+			'sphere glass diffuse',
+			'sphere',
+			[-1.0, 0.0, 2.0],
+			[1.5, 1.5, 1.5],
+			[0.0, 0.0, 0.0],
+			9
+		));
+
+		// suzanne
+		scene.addObj(new Obj(
+			'suzanne',
+			'mesh',
+			[-1.5, 1.0, -2.5],
+			[1.2, 1.2, 1.2],
+			[0.0, 0.0, 0.0],
+			7,
+			0,
+			scene.meshModelsManager.getMeshAABB(0)
+		));
+
+		// icosahedron
+		scene.addObj(new Obj(
+			'icosahedron',
+			'mesh',
+			[1.5, 1.0, -2.5],
+			[1.2, 1.2, 1.2],
+			[0.0, 0.0, 0.0],
+			8,
+			1,
+			scene.meshModelsManager.getMeshAABB(1)
+		));
+
+		scene.onChange(true);
+	});
 
 	render.render_loop();
-}
-
-function initDefaultScene(scene) {
-
-	// ===== materials =====
-	scene.addMaterial(new Material(
-		'light',
-		[1.0, 1.0, 1.0],
-		false,
-		1.0,
-		false,
-		1.0,
-		10.0,
-		false
-	));
-
-	scene.addMaterial(new Material(
-		'white diffuse',
-		[1.0, 1.0, 1.0],
-		false,
-		1.0,
-		false,
-		1.0,
-		0.0,
-		false
-	));
-
-	scene.addMaterial(new Material(
-		'red diffuse',
-		[0.75, 0.25, 0.25],
-		false,
-		1.0,
-		false,
-		1.0,
-		0.0,
-		false
-	));
-
-	scene.addMaterial(new Material(
-		'blue diffuse',
-		[0.25, 0.25, 0.75],
-		false,
-		1.0,
-		false,
-		1.0,
-		0.0,
-		false
-	));
-
-	scene.addMaterial(new Material(
-		'green diffuse',
-		[0.25, 0.75, 0.25],
-		false,
-		1.0,
-		false,
-		1.0,
-		0.0,
-		false
-	));
-
-	scene.addMaterial(new Material(
-		'metal',
-		[0.9, 0.9, 0.9],
-		true,
-		1.0,
-		false,
-		1.0,
-		0.0,
-		false
-	));
-
-	scene.addMaterial(new Material(
-		'metal diffuse',
-		[0.9, 0.9, 0.9],
-		true,
-		0.9,
-		false,
-		1.0,
-		0.0,
-		false
-	));
-
-	scene.addMaterial(new Material(
-		'glass',
-		[1.0, 1.0, 1.0],
-		true,
-		1.0,
-		true,
-		1.7,
-		0.0,
-		true
-	));
-
-	scene.addMaterial(new Material(
-		'glass diffuse',
-		[1.0, 1.0, 1.0],
-		true,
-		0.95,
-		true,
-		1.7,
-		0.0,
-		true
-	))
-
-	scene.addMaterial(new Material(
-		'yellow diffuse',
-		[0.7, 0.7, 0.05],
-		false,
-		1.0,
-		false,
-		1.0,
-		0.0,
-		false
-	))
-
-	// ===== objs =====
-
-	scene.addObj(new Obj(
-		'light',
-		'plane',
-		[-3.5, 4.0, 5.0],
-		[2, 1, 2],
-		[-120.0, 30.0, -20.0],
-		0
-	));
-
-	// walls
-	let WallScale = 10.0;
-	let WallTrans = 5.0;
-
-	scene.addObj(new Obj(
-		'wall 3',
-		'plane',
-		[-WallTrans, 0.0, 0.0],
-		[WallScale, 1.0, WallScale],
-		[0.0, 0.0, -90.0],
-		2
-	));
-
-	scene.addObj(new Obj(
-		'wall 4',
-		'plane',
-		[WallTrans, 0.0, 0.0],
-		[WallScale, 1.0, WallScale],
-		[0.0, 0.0, 90.0],
-		3
-	));
-
-	scene.addObj(new Obj(
-		'wall 6',
-		'plane',
-		[0.0, -WallTrans, 0.0],
-		[WallScale, 1.0, WallScale],
-		[0.0, 0.0, 0.0],
-		1
-	));
-
-	// sphere white diffuse
-	scene.addObj(new Obj(
-		'sphere green diffuse',
-		'sphere',
-		[-2.0, 0.0, 0.0],
-		[1.5, 1.5, 1.5],
-		[0.0, 0.0, 0.0],
-		4
-	));
-
-	// sphere metal
-	scene.addObj(new Obj(
-		'sphere metal',
-		'sphere',
-		[0.0, 0.0, 0.0],
-		[1.5, 1.5, 1.5],
-		[0.0, 0.0, 0.0],
-		5
-	));
-
-	scene.addObj(new Obj(
-		'sphere metal diffuse',
-		'sphere',
-		[1.0, 0.0, 2.0],
-		[1.5, 1.5, 1.5],
-		[0.0, 0.0, 0.0],
-		6
-	));
-
-	// sphere glass
-	scene.addObj(new Obj(
-		'sphere glass',
-		'sphere',
-		[2.0, 0.0, 0.0],
-		[1.5, 1.5, 1.5],
-		[0.0, 0.0, 0.0],
-		7
-	));
-
-	scene.addObj(new Obj(
-		'sphere glass',
-		'sphere',
-		[-1.0, 0.0, 2.0],
-		[1.5, 1.5, 1.5],
-		[0.0, 0.0, 0.0],
-		8
-	));
-
-	// suzanne
-	scene.addObj(new Obj(
-		'suzanne',
-		'mesh',
-		[-1.5, 1.0, -2.5],
-		[1.2, 1.2, 1.2],
-		[0.0, 0.0, 0.0],
-		6,
-		0,
-		scene.meshModelsManager.getMeshAABB(0)
-	));
-
-	// //icosahedron
-	scene.addObj(new Obj(
-		'icosahedron',
-		'mesh',
-		[1.5, 1.0, -2.5],
-		[1.2, 1.2, 1.2],
-		[0.0, 0.0, 0.0],
-		7,
-		1,
-		scene.meshModelsManager.getMeshAABB(1)
-	));
-
-	// desk
-	scene.addObj(new Obj(
-		'desk',
-		'cube',
-		[0.0, -1.0, 0.0],
-		[8, 0.2, 8],
-		[0.0, 0.0, 0.0],
-		9
-	));
-	// console.log(scene.objs);
-	scene.flushRootBVH();
-
 }

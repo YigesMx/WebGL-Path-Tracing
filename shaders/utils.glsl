@@ -41,6 +41,7 @@ struct Intersection {
     vec3 intersectPos;
     vec3 intersectNormal;
     float intersectDistance;
+    bool isInsideOut;
 };
 
 struct Triangle {
