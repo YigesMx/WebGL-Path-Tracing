@@ -11,18 +11,27 @@ async function main() {
 	let meshFiles = await wait_fetch_urls([
 		{
 			name: 'icosahedron',
-			// url: './models/sphere_triangle.obj'
 			url: './models/icosahedron.obj'
 		},
 		{
 			name: 'suzanne',
 			url: './models/suzanne.obj'
-		}
+		},
+		{
+			name: 'sphere_triangles',
+			url: './models/sphere_triangle.obj'
+		},
+		// {
+		// 	name: 'dragon',
+		// 	url: './models/dragon.obj'
+		// }
 	]);
 
 	let parsedMeshes = [
 		...new OBJFile(meshFiles['suzanne']).parse().models,
 		...new OBJFile(meshFiles['icosahedron']).parse().models,
+		...new OBJFile(meshFiles['sphere_triangles']).parse().models,
+		// ...new OBJFile(meshFiles['dragon']).parse().models,
 	];
 
 	let shaderFiles = await wait_fetch_urls([

@@ -106,8 +106,8 @@ export class MeshModels {
     static meshAttributesWidth = 512;
     static meshAttributesHeight = 512;
 
-    static triangleAttributesWidth = 512;
-    static triangleAttributesHeight = 512;
+    static triangleAttributesWidth = 1024;
+    static triangleAttributesHeight = 1024;
 
     constructor() {
         let container = document.getElementById('flex-container');
