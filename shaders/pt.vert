@@ -1,3 +1,5 @@
+precision highp float;
+
 in vec2 vertexPos;
 uniform vec3 cameraPos;
 uniform mat4 invVP;
