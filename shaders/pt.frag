@@ -21,6 +21,7 @@ uniform int objNums;
 uniform vec3 cameraPos;
 
 uniform float iterations;
+uniform int maxBounces;
 
 uniform sampler2D displayBufferTexture;
 uniform vec2 displayBufferTextureSize;
@@ -65,6 +66,7 @@ uniform vec2 triangleAttributesTextureSize;
 uniform int triangleSectionsPerTriangle;
 
 uniform sampler2D envTexture;
+uniform int enableEnvTexture;
 
 in vec3 initRayDirection;
 
@@ -134,32 +136,32 @@ int getElementID(int elementIDMapLocation){
 
 /* For Intersect Detection */
 vec3 getPointOnRay(Ray ray, float dis){
-  return ray.origin + (dis - 0.0001) * normalize(ray.direction);
+	return ray.origin + (dis - 0.0001) * normalize(ray.direction);
 }
 
 const float radius = 0.5;
 bool intersectSphere(Object obj, in Ray ray, out Intersection intersect) {
 
-    Ray rayInObjCoord;
-    rayInObjCoord.origin = (obj.invModel * vec4(ray.origin,1.0)).xyz;
-    rayInObjCoord.direction = (normalize(obj.invModel * vec4(ray.direction,0.0))).xyz;
+	Ray rayInObjCoord;
+	rayInObjCoord.origin = (obj.invModel * vec4(ray.origin,1.0)).xyz;
+	rayInObjCoord.direction = (normalize(obj.invModel * vec4(ray.direction,0.0))).xyz;
 
 	float sign=1.0;
 	if(sqrt(dot(rayInObjCoord.origin, rayInObjCoord.origin)) < radius){
 		sign=-1.0;
 		intersect.isInsideOut = true;
-//		return false;
+		//		return false;
 	}else{
 		intersect.isInsideOut = false;
 	}
 
-    float vDotDirection = dot(rayInObjCoord.origin, rayInObjCoord.direction); //
+	float vDotDirection = dot(rayInObjCoord.origin, rayInObjCoord.direction); //
 	float radicand = vDotDirection * vDotDirection - (dot(rayInObjCoord.origin, rayInObjCoord.origin) - radius * radius);
 	if (radicand < 0.0){
 		return false;
 	}
 
-    float squareRoot = sqrt(radicand);
+	float squareRoot = sqrt(radicand);
 	float firstTerm = -vDotDirection;
 	float t1 = firstTerm + squareRoot;
 	float t2 = firstTerm - squareRoot;
@@ -178,20 +180,20 @@ bool intersectSphere(Object obj, in Ray ray, out Intersection intersect) {
 	intersect.intersectNormal  = sign * vec3( normalize((obj.transInvModel * vec4((intersect.intersectPos - realOrigin), 0.0)).xyz) ); // fix normal with model matrix
 
 	intersect.intersectDistance = length(ray.origin - intersect.intersectPos);
-    return true;
+	return true;
 }
 
 bool intersectCube(Object obj, in Ray ray, out Intersection intersect) {
 
-    Ray rayInObjCoord;
-    rayInObjCoord.origin = (obj.invModel * vec4(ray.origin,1.0)).xyz;
-    rayInObjCoord.direction = (normalize(obj.invModel * vec4(ray.direction,0.0))).xyz;
+	Ray rayInObjCoord;
+	rayInObjCoord.origin = (obj.invModel * vec4(ray.origin,1.0)).xyz;
+	rayInObjCoord.direction = (normalize(obj.invModel * vec4(ray.direction,0.0))).xyz;
 
-    float sign=1.0;
+	float sign=1.0;
 	if(abs(rayInObjCoord.origin.x)-0.5<0.0&&abs(rayInObjCoord.origin.y)-0.5<0.0&&abs(rayInObjCoord.origin.z)-0.5<0.0){
 		sign = -1.0;
 		intersect.isInsideOut = true;
-//		return false;
+		//		return false;
 	}else{
 		intersect.isInsideOut = false;
 	}
@@ -228,29 +230,29 @@ bool intersectCube(Object obj, in Ray ray, out Intersection intersect) {
 
 	float t;
 	if (tnear < -0.0001)
-		t=tfar;
+	t=tfar;
 	else
-		t=tnear;
+	t=tnear;
 
-    vec3 P = getPointOnRay(rayInObjCoord, t);
+	vec3 P = getPointOnRay(rayInObjCoord, t);
 	if(abs(P[0]-0.5)<0.001)
-		intersect.intersectNormal = vec3(1,0,0);
+	intersect.intersectNormal = vec3(1,0,0);
 	else if(abs(P[0]+0.5)<0.001)
-		intersect.intersectNormal = vec3(-1,0,0);
+	intersect.intersectNormal = vec3(-1,0,0);
 	else if(abs(P[1]-0.5)<0.001)
-		intersect.intersectNormal = vec3(0,1,0);
+	intersect.intersectNormal = vec3(0,1,0);
 	else if(abs(P[1]+0.5)<0.001)
-		intersect.intersectNormal = vec3(0,-1,0);
+	intersect.intersectNormal = vec3(0,-1,0);
 	else if(abs(P[2]-0.5)<0.001)
-		intersect.intersectNormal = vec3(0,0,1);
+	intersect.intersectNormal = vec3(0,0,1);
 	else if(abs(P[2]+0.5)<0.001)
-		intersect.intersectNormal = vec3(0,0,-1);
+	intersect.intersectNormal = vec3(0,0,-1);
 
 
-    intersect.intersectPos = (obj.model *  vec4(P, 1.0)).xyz;
-    intersect.intersectNormal = sign * normalize((obj.transInvModel * vec4(intersect.intersectNormal,0.0)).xyz);
+	intersect.intersectPos = (obj.model *  vec4(P, 1.0)).xyz;
+	intersect.intersectNormal = sign * normalize((obj.transInvModel * vec4(intersect.intersectNormal,0.0)).xyz);
 	intersect.intersectDistance = length(ray.origin - intersect.intersectPos);
-    return true;
+	return true;
 }
 
 bool intersectPlane(Object obj, in Ray ray, out Intersection intersect) {	//on xz plane, normal: +y
@@ -261,14 +263,14 @@ bool intersectPlane(Object obj, in Ray ray, out Intersection intersect) {	//on x
 	rayInObjCoord.direction = (normalize(obj.invModel * vec4(ray.direction,0.0))).xyz;
 
 	if(rayInObjCoord.direction.y >= 0.0 || rayInObjCoord.direction.y == 0.0)
-		return false;
+	return false;
 
-    float t = - rayInObjCoord.origin.y / rayInObjCoord.direction.y;
+	float t = - rayInObjCoord.origin.y / rayInObjCoord.direction.y;
 
 	vec3 intersectPoint = getPointOnRay(rayInObjCoord, t);
 	if (intersectPoint.x < -0.5 || intersectPoint.x > 0.5 ||
-        intersectPoint.z < -0.5 || intersectPoint.z > 0.5)
-        return false;
+	intersectPoint.z < -0.5 || intersectPoint.z > 0.5)
+	return false;
 
 	intersect.intersectPos = (obj.model *  vec4(intersectPoint, 1.0)).xyz;
 	intersect.intersectNormal = normalize((obj.transInvModel * vec4(intersect.intersectNormal,0.0)).xyz);
@@ -287,16 +289,20 @@ vec2 getTriangleAttributeTextureCoord(int sectionID){
 mat3 getTriangleVertexes(int triangleID){
 	vec2 coord = getTriangleAttributeTextureCoord(triangleID*triangleSectionsPerTriangle);
 	vec3 v1 = texture(triangleAttributesTexture, vec2(coord.x/triangleAttributesTextureWidth,coord.y/triangleAttributesTextureHeight)).xyz;
-	vec3 v2 = texture(triangleAttributesTexture, vec2((coord.x+1.0)/triangleAttributesTextureWidth,coord.y/triangleAttributesTextureHeight)).xyz;
-	vec3 v3 = texture(triangleAttributesTexture, vec2((coord.x+2.0)/triangleAttributesTextureWidth,coord.y/triangleAttributesTextureHeight)).xyz;
+	coord = getTriangleAttributeTextureCoord(triangleID*triangleSectionsPerTriangle+1);
+	vec3 v2 = texture(triangleAttributesTexture, vec2(coord.x/triangleAttributesTextureWidth,coord.y/triangleAttributesTextureHeight)).xyz;
+	coord = getTriangleAttributeTextureCoord(triangleID*triangleSectionsPerTriangle+2);
+	vec3 v3 = texture(triangleAttributesTexture, vec2(coord.x/triangleAttributesTextureWidth,coord.y/triangleAttributesTextureHeight)).xyz;
 	return mat3(v1,v2,v3);
 }
 
 mat3 getTriangleVertexesNormals(int triangleID){
 	vec2 coord = getTriangleAttributeTextureCoord(triangleID*triangleSectionsPerTriangle+3);
 	vec3 v1 = texture(triangleAttributesTexture, vec2(coord.x/triangleAttributesTextureWidth,coord.y/triangleAttributesTextureHeight)).xyz;
-	vec3 v2 = texture(triangleAttributesTexture, vec2((coord.x+1.0)/triangleAttributesTextureWidth,coord.y/triangleAttributesTextureHeight)).xyz;
-	vec3 v3 = texture(triangleAttributesTexture, vec2((coord.x+2.0)/triangleAttributesTextureWidth,coord.y/triangleAttributesTextureHeight)).xyz;
+	coord = getTriangleAttributeTextureCoord(triangleID*triangleSectionsPerTriangle+4);
+	vec3 v2 = texture(triangleAttributesTexture, vec2(coord.x/triangleAttributesTextureWidth,coord.y/triangleAttributesTextureHeight)).xyz;
+	coord = getTriangleAttributeTextureCoord(triangleID*triangleSectionsPerTriangle+5);
+	vec3 v3 = texture(triangleAttributesTexture, vec2(coord.x/triangleAttributesTextureWidth,coord.y/triangleAttributesTextureHeight)).xyz;
 	return mat3(v1,v2,v3);
 }
 
@@ -338,7 +344,7 @@ bool intersectTriangle(int triangleID, in Ray ray, out Intersection intersect){
 	if(dot(intersect.intersectNormal, ray.direction) > 0.0){
 		intersect.intersectNormal = -intersect.intersectNormal;
 		intersect.isInsideOut = true;
-//		return false;
+		//		return false;
 	}else{
 		intersect.isInsideOut = false;
 	}
@@ -439,9 +445,9 @@ bool intersectMeshBVH(int meshBVHNodeID, in Ray ray, inout Intersection finalInt
 	}
 
 	if (closestIntersectionDistance < INF_F-0.1)
-		return true;
+	return true;
 	else
-		return false;
+	return false;
 }
 
 bool intersectMesh(Object meshObj, in Ray ray, out Intersection intersect) {
@@ -620,21 +626,21 @@ bool intersectObjs(const int elementStart, const int elementEnd, Ray ray, inout 
 bool intersectRootBVH(int rootBVHNodeID, in Ray ray, inout Intersection finalIntersect, inout Object finalIntersectObj){
 
 	float tmin, tmax;
-    int stack[64];
-    int stackTop = -1;
+	int stack[64];
+	int stackTop = -1;
 	float closestIntersectionDistance = INF_F;
 
-    stack[++stackTop] = rootBVHNodeID;
+	stack[++stackTop] = rootBVHNodeID;
 
-    while(stackTop >= 0) {
-        int nodeID = stack[stackTop--];
-        vec3 minAABB = getMin(nodeID);
-        vec3 maxAABB = getMax(nodeID);
+	while(stackTop >= 0) {
+		int nodeID = stack[stackTop--];
+		vec3 minAABB = getMin(nodeID);
+		vec3 maxAABB = getMax(nodeID);
 
-        if(intersectAABB(ray, minAABB, maxAABB, tmin, tmax)) {
-            vec2 children = getChildren(nodeID);
-            int leftChild = int(children.x);
-            int rightChild = int(children.y);
+		if(intersectAABB(ray, minAABB, maxAABB, tmin, tmax)) {
+			vec2 children = getChildren(nodeID);
+			int leftChild = int(children.x);
+			int rightChild = int(children.y);
 
 			if (tmin > closestIntersectionDistance) continue;
 
@@ -664,26 +670,25 @@ bool intersectRootBVH(int rootBVHNodeID, in Ray ray, inout Intersection finalInt
 				}
 			}
 
-        }
-    }
+		}
+	}
 
 	if (closestIntersectionDistance < INF_F - 0.01)
-		return true;
+	return true;
 	else
-		return false;
+	return false;
 }
 
-const int depth = 8; // TODO: 加入可传入uniform 的最大迭代深度参数
 const float shift = 0.01;
 vec3 pathTrace(in Ray currentRay, inout vec3 finalColor){
 
 	vec3 tempColor = vec3(1.0);
 
-	for (int i = 0; i < depth; ++i) {
+	for (int i = 0; i < maxBounces; ++i) {
 
 		Intersection intersect;
 		Object obj;
-        float seed = time + float(i)/100.0; // random seed
+		float seed = time + float(i)/100.0; // random seed
 
 		if (intersectRootBVH(rootBVH, currentRay, intersect, obj)) { // 通过 BVH 求出相交物体并得到相交信息
 
@@ -692,7 +697,7 @@ vec3 pathTrace(in Ray currentRay, inout vec3 finalColor){
 			// 光源物体 TODO: 未来可以考虑实现单独的光源类，以实现平行光、隐藏光源等功能
 			if(obj.emittance > 0.0){
 				finalColor = tempColor * obj.color * obj.emittance;
-			    return finalColor;
+				return finalColor;
 			}
 
 			Ray newRay = currentRay;
@@ -704,7 +709,7 @@ vec3 pathTrace(in Ray currentRay, inout vec3 finalColor){
 				finalColor = tempColor;
 
 				newRay.direction = normalize(calculateRandomDirectionInHemisphere(intersect.intersectNormal, initRayDirection, seed + randOnVec2(intersect.intersectPos.xy)));
-                newRay.origin = intersect.intersectPos + shift * newRay.direction;
+				newRay.origin = intersect.intersectPos + shift * newRay.direction;
 
 			} else { // 有反射或折射
 
@@ -743,11 +748,11 @@ vec3 pathTrace(in Ray currentRay, inout vec3 finalColor){
 
 						newRay.origin = intersect.intersectPos + shift * newRay.direction;
 
-//						if(obj.subsurfaceScatter > 0){ // 若有次表面散射，则加入次表面散射，目前是写死的模拟默认场景中的光源，物体透光度等都是写死的
-//							float random = randOnVec2(intersect.intersectPos.xy);
-//							tempColor *= subScatterFS(intersect, obj, random);
-//							finalColor = tempColor;
-//						}
+						//						if(obj.subsurfaceScatter > 0){ // 若有次表面散射，则加入次表面散射，目前是写死的模拟默认场景中的光源，物体透光度等都是写死的
+						//							float random = randOnVec2(intersect.intersectPos.xy);
+						//							tempColor *= subScatterFS(intersect, obj, random);
+						//							finalColor = tempColor;
+						//						}
 
 					} else { // 折射
 						vec3 refractDirection = refract(currentRay.direction, intersect.intersectNormal, IORratio);
@@ -759,11 +764,11 @@ vec3 pathTrace(in Ray currentRay, inout vec3 finalColor){
 
 						newRay.origin = intersect.intersectPos + shift * newRay.direction;
 
-//						if(isInsideOut){ //out object
-//							newRay.IOR /= objIOR;
-//						} else { //into object
-//							newRay.IOR *= objIOR;
-//						}
+						//						if(isInsideOut){ //out object
+						//							newRay.IOR /= objIOR;
+						//						} else { //into object
+						//							newRay.IOR *= objIOR;
+						//						}
 
 						if(isInsideOut){ //out object
 							newRay.IOR = 1.0;
@@ -783,7 +788,7 @@ vec3 pathTrace(in Ray currentRay, inout vec3 finalColor){
 					}
 					tempColor *= obj.color; // TODO: 加入 metallic 控制金属自身颜色加入比例
 					finalColor = tempColor;
-//					newRay.IOR = 1.0;
+					//					newRay.IOR = 1.0;
 
 					newRay.direction = reflect(currentRay.direction, intersect.intersectNormal);
 					if(obj.reflectivity < 1.0){
@@ -792,14 +797,17 @@ vec3 pathTrace(in Ray currentRay, inout vec3 finalColor){
 					newRay.origin = intersect.intersectPos + shift * newRay.direction;
 				}
 
-            }
+			}
 
 			currentRay = newRay;
 
 		} else { // 无交点 - 环境光
-
-			// TODO: 考虑加入环境贴图开关
-			vec3 envColor = texture(envTexture, vec2(0.5 + atan(currentRay.direction.z, currentRay.direction.x) / (2.0 * PI), 0.5 - asin(currentRay.direction.y) / PI)).rgb;
+			vec3 envColor;
+			if(enableEnvTexture != 0){
+				envColor = texture(envTexture, vec2(0.5 + atan(currentRay.direction.z, currentRay.direction.x) / (2.0 * PI), 0.5 - asin(currentRay.direction.y) / PI)).rgb;
+			}else{
+				envColor = vec3(0.0, 0.0, 0.0);
+			}
 			finalColor = tempColor * envColor;
 			return finalColor;
 
@@ -807,7 +815,7 @@ vec3 pathTrace(in Ray currentRay, inout vec3 finalColor){
 
 	}
 
-  	finalColor = vec3(0.0,0.0,0.0);
+	finalColor = vec3(0.0,0.0,0.0);
 	return finalColor;
 }
 

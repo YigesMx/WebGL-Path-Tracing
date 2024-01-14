@@ -58,9 +58,13 @@ export class Renderer{
 	pt_objNums_uniformLocation;
 	pt_time_uniformLocation;
 	pt_iterations_uniformLocation;
+	maxBounces = 8;
+	pt_maxBounces_uniformLocation;
 
 	enableSSAA = 0;
 	pt_enableSSAA_uniformLocation;
+	SSAA_Scale = 1.0;
+	pt_SSAA_Scale_uniformLocation;
 
 	pt_displayBuffer_textureLocation;
 	pt_displayBufferTextureSize_uniformLocation;
@@ -98,7 +102,9 @@ export class Renderer{
 
 	envTexture;
 	pt_envTexture_uniformLocation;
-	// pt_envTextureSize_uniformLocation;
+	enableEnvTexture = true;
+	pt_enableEnvTexture_uniformLocation;
+
 
 	//===== display shader =====
 
@@ -129,10 +135,26 @@ export class Renderer{
 			this.enableSSAA = value ? 1 : 0;
 			this.resetIterations();
 		});
+		this.viewGUI.add({SSAA_Scale: 1.0}, 'SSAA_Scale').min(0.0).max(5.0).name('SSAA Scale').onChange((value) => {
+			this.SSAA_Scale = value;
+			this.resetIterations();
+		});
 		this.viewGUI.add({resolution: [512,512]}, 'resolution', [[256,256], [512,512], [720, 720]]).name('Resolution').onChange((value) => {
 			this.target_canvas.width = value[0];
 			this.target_canvas.height = value[1];
 			this.resize();
+		});
+		this.viewGUI.add({fov: 60}, 'fov').min(15).max(165).name('FOV').onChange((value) => {
+			this.viewConfig.viewFOVY = value/180*Math.PI;
+			this.resetIterations();
+		});
+		this.viewGUI.add({enableEnvTexture: true}, 'enableEnvTexture').name('Enable Env Texture').onChange((value) => {
+			this.enableEnvTexture = value ? 1 : 0;
+			this.resetIterations();
+		});
+		this.viewGUI.add({maxBounces : 8}, 'maxBounces').min(1).max(12).step(1).name('Max Bounces').onChange((value) => {
+			this.maxBounces = value;
+			this.resetIterations();
 		});
 		end = Date.now();
 		document.getElementById("time").innerHTML +=  "Initialize WebGL: " + (end-begin).toString() + " ms<br/>";
@@ -244,10 +266,12 @@ export class Renderer{
 		this.pt_triangleSectionsPerTriangle_uniformLocation = this.gl.getUniformLocation(this.ptShaderProgram, "triangleSectionsPerTriangle");
 
 		this.pt_envTexture_uniformLocation = this.gl.getUniformLocation(this.ptShaderProgram, "envTexture");
-		// this.pt_envTextureSize_uniformLocation = this.gl.getUniformLocation(this.ptShaderProgram, "envTextureSize");
+		this.pt_enableEnvTexture_uniformLocation = this.gl.getUniformLocation(this.ptShaderProgram, "enableEnvTexture");
+
+		this.pt_maxBounces_uniformLocation = this.gl.getUniformLocation(this.ptShaderProgram, "maxBounces");
 
 		this.pt_enableSSAA_uniformLocation = this.gl.getUniformLocation(this.ptShaderProgram, "enableSSAA");
-
+		this.pt_SSAA_Scale_uniformLocation = this.gl.getUniformLocation(this.ptShaderProgram, "SSAA_Scale");
 		//===== display shader =====
 		this.displayShaderProgram = createProgram(this.gl, displayVert, displayFrag, this.target_message);
 
@@ -418,7 +442,9 @@ export class Renderer{
 			this.gl.uniform1f(this.pt_iterations_uniformLocation, this.iterations);
 			this.gl.uniform1i(this.pt_objNums_uniformLocation, this.scene.objs.length);
 			this.gl.uniform1i(this.pt_enableSSAA_uniformLocation, this.enableSSAA);
+			this.gl.uniform1f(this.pt_SSAA_Scale_uniformLocation, this.SSAA_Scale)
 
+			this.gl.uniform1i(this.pt_maxBounces_uniformLocation, this.maxBounces)
 
 			this.gl.uniform2f(this.pt_displayBufferTextureSize_uniformLocation, this.target_canvas.width, this.target_canvas.height);
 			this.gl.activeTexture(this.gl.TEXTURE0);
@@ -486,6 +512,8 @@ export class Renderer{
 			this.gl.bindTexture(this.gl.TEXTURE_2D, this.envTexture);
 			this.gl.generateMipmap(this.gl.TEXTURE_2D);
 			this.gl.uniform1i(this.pt_envTexture_uniformLocation, 7);
+
+			this.gl.uniform1i(this.pt_enableEnvTexture_uniformLocation, this.enableEnvTexture);
 			// end env
 
 			this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.vertexPositionBuffer);

@@ -239,6 +239,7 @@ export class BVHs {
 
     BFS(rootID){ // for debug
         let queue = [[rootID, 0]];
+        let objSum = 0;
         while(queue.length > 0){
             let queFront = queue.shift();
             let nodeID = queFront[0];
@@ -249,8 +250,9 @@ export class BVHs {
             console.log('leftChild: ' + this.getLeftChild(nodeID) + ' rightChild: ' + this.getRightChild(nodeID));
             console.log(this.getAABB(nodeID));
             console.log('location: ' + this.getElementIDMapLocation(nodeID) + ' length: ' + this.getElementIDMapLength(nodeID));
-            console.log(this.getElementIDMap(this.getElementIDMapLocation(nodeID), this.getElementIDMapLength(nodeID)));
-
+            let elementIDMap = this.getElementIDMap(this.getElementIDMapLocation(nodeID), this.getElementIDMapLength(nodeID));
+            console.log(elementIDMap);
+            objSum += elementIDMap.length;
 
             if(this.getLeftChild(nodeID) > -0.5){
                 queue.push([this.getLeftChild(nodeID), depth+1]);
@@ -259,6 +261,7 @@ export class BVHs {
                 queue.push([this.getRightChild(nodeID), depth+1]);
             }
         }
+        console.log('objSum: ' + objSum);
     }
 
     createBVH(elementsWithAABB, root){

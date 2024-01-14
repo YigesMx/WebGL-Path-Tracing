@@ -288,5 +288,6 @@ async function main() {
 		scene.onChange(true);
 	});
 
+	window.render = render;
 	render.render_loop();
 }
