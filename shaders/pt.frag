@@ -399,14 +399,14 @@ int getTriangleAttributesStart(int meshID){
 	return int(texture(meshAttributesTexture, vec2(coord.x/meshAttributesTextureWidth,coord.y/meshAttributesTextureHeight)).y);
 }
 
-bool intersectMeshBVH(in int meshBVHNodeID, in Ray ray, inout Intersection finalIntersect, in int triangleIDBase){
+bool intersectMeshBVH(in int meshBVH, in Ray ray, inout Intersection finalIntersect, in int triangleIDBase){
 
 	float tmin, tmax;
 	int stack[64];
 	int stackTop = -1;
 	float closestIntersectionDistance = INF_F - 0.01;
 
-	stack[++stackTop] = meshBVHNodeID;
+	stack[++stackTop] = meshBVH;
 
 	while(stackTop >= 0) {
 		int nodeID = stack[stackTop--];
@@ -422,13 +422,12 @@ bool intersectMeshBVH(in int meshBVHNodeID, in Ray ray, inout Intersection final
 
 			if(leftChild <= 0 && rightChild <= 0) {
 
-				int start = int(getElementIDMap(nodeID).x);
-				int end = start + int(getElementIDMap(nodeID).y);
+				vec2 elementIDMap = getElementIDMap(nodeID);
 
 				Intersection tempIntersect;
 				tempIntersect.intersectDistance = INF_F;
 
-				bool intersected = intersectTriangles(start, end, ray, tempIntersect, triangleIDBase);//intersect triangles
+				bool intersected = intersectTriangles(int(elementIDMap.x), int(elementIDMap.x + elementIDMap.y), ray, tempIntersect, triangleIDBase);//intersect triangles
 
 				if(intersected && (tempIntersect.intersectDistance > 0.0) && (tempIntersect.intersectDistance < closestIntersectionDistance)){
 					closestIntersectionDistance = tempIntersect.intersectDistance;
@@ -459,7 +458,7 @@ bool intersectMeshBVH(in int meshBVHNodeID, in Ray ray, inout Intersection final
 bool intersectMesh(in Object meshObj, in Ray ray, inout Intersection intersect) {
 
 	int meshBVH = getMeshBVH(meshObj.meshID);
-	int triangleAttributesStart = getTriangleAttributesStart(meshObj.meshID);
+	int triangleAttributesBase = getTriangleAttributesStart(meshObj.meshID);
 
 	Ray rayInMeshCoord;
 	rayInMeshCoord.origin = (meshObj.invModel * vec4(ray.origin,1.0)).xyz;
@@ -468,7 +467,7 @@ bool intersectMesh(in Object meshObj, in Ray ray, inout Intersection intersect) 
 	Intersection tempIntersect;
 	tempIntersect.intersectDistance = INF_F;
 
-	if(intersectMeshBVH(meshBVH, rayInMeshCoord, tempIntersect, triangleAttributesStart/18)){
+	if(intersectMeshBVH(meshBVH, rayInMeshCoord, tempIntersect, triangleAttributesBase/18)){
 
 		intersect.intersectPos = (meshObj.model *  vec4(tempIntersect.intersectPos, 1.0)).xyz;
 		intersect.intersectNormal = normalize((meshObj.transInvModel * vec4(tempIntersect.intersectNormal, 0.0)).xyz);
@@ -627,14 +626,14 @@ bool intersectObjs(const int elementStart, const int elementEnd, in Ray ray, ino
 	}
 }
 
-bool intersectRootBVH(in int rootBVHNodeID, in Ray ray, inout Intersection finalIntersect, inout int finalIntersectObjID){
+bool intersectRootBVH(in int rootBVH, in Ray ray, inout Intersection finalIntersect, inout int finalIntersectObjID){
 
 	float tmin, tmax;
 	int stack[64];
 	int stackTop = -1;
 	float closestIntersectionDistance = INF_F - 0.01;
 
-	stack[++stackTop] = rootBVHNodeID;
+	stack[++stackTop] = rootBVH;
 
 	while(stackTop >= 0) {
 		int nodeID = stack[stackTop--];
@@ -650,14 +649,13 @@ bool intersectRootBVH(in int rootBVHNodeID, in Ray ray, inout Intersection final
 
 			if(leftChild <= 0 && rightChild <= 0) {
 
-				int start = int(getElementIDMap(nodeID).x);
-				int end = start + int(getElementIDMap(nodeID).y);
+				vec2 elementIDMap = getElementIDMap(nodeID);
 
 				Intersection tempIntersect;
 				tempIntersect.intersectDistance = INF_F;
 
 				int tempIntersectObjID;
-				bool intersected = intersectObjs(start, end, ray, tempIntersect, tempIntersectObjID);
+				bool intersected = intersectObjs(int(elementIDMap.x), int(elementIDMap.x + elementIDMap.y), ray, tempIntersect, tempIntersectObjID);
 
 				if(intersected && (tempIntersect.intersectDistance > 0.0) && (tempIntersect.intersectDistance < closestIntersectionDistance)){
 					closestIntersectionDistance = tempIntersect.intersectDistance;

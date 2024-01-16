@@ -87,7 +87,7 @@ export class Mesh {
         this.name = name;
         this.meshBVH = meshBVH;
         this.triangleArray = triangleArray;
-        this.triangleAttributesStart = triangleAttributesBase;
+        this.triangleAttributesBase = triangleAttributesBase;
         this.AABB = AABB;
 
         this.gui = undefined;
@@ -96,7 +96,7 @@ export class Mesh {
     formatAttributesTexture() {
         let array = new Float32Array(Mesh.size);
         array[0] = this.meshBVH;
-        array[1] = this.triangleAttributesStart;
+        array[1] = this.triangleAttributesBase;
         array[2] = 0.0; //reserved
         return array;
     }
@@ -130,7 +130,7 @@ export class MeshModels {
 
         let triangleAttributesTexture = this.meshes[meshID].triangleArray.formatAttributesTexture();
         for(let i = 0; i < triangleAttributesTexture.length; i++) {
-            this.triangleAttributesTextureData[this.meshes[meshID].triangleAttributesStart + i] = triangleAttributesTexture[i];
+            this.triangleAttributesTextureData[this.meshes[meshID].triangleAttributesBase + i] = triangleAttributesTexture[i];
         }
     }
 
