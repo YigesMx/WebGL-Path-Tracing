@@ -1,0 +1,361 @@
+<mxfile host="app.diagrams.net" modified="2024-01-16T13:07:17.876Z" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0" etag="3pjD-jSVScPR7ofEawXj" version="22.1.18" type="device">
+  <diagram name="第 1 页" id="M9hGIelaYjTdb-50f6b-">
+    <mxGraphModel dx="2851" dy="1376" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-6" value="ray" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="Xw9Ffh_aE6y1-BGfohLy-4" target="Xw9Ffh_aE6y1-BGfohLy-5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-4" value="根据像素位置生成初始光线" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="-120" y="40" width="80" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="Xw9Ffh_aE6y1-BGfohLy-5" target="Xw9Ffh_aE6y1-BGfohLy-7">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-10" value="finalColor" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="Xw9Ffh_aE6y1-BGfohLy-8">
+          <mxGeometry x="-0.025" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-12" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0;entryDx=0;entryDy=0;endArrow=none;endFill=0;dashed=1;dashPattern=8 8;" edge="1" parent="1" source="Xw9Ffh_aE6y1-BGfohLy-5" target="Xw9Ffh_aE6y1-BGfohLy-11">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-13" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=1;exitDx=0;exitDy=0;entryX=1;entryY=0;entryDx=0;entryDy=0;endArrow=none;endFill=0;dashed=1;dashPattern=8 8;" edge="1" parent="1" source="Xw9Ffh_aE6y1-BGfohLy-5" target="Xw9Ffh_aE6y1-BGfohLy-11">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-5" value="pathTrace" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="20" y="40" width="80" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-21" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="Xw9Ffh_aE6y1-BGfohLy-7" target="Xw9Ffh_aE6y1-BGfohLy-20">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-7" value="混合本次路径追踪&lt;br&gt;结果与此前结果" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="180" y="40" width="120" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-11" value="pathTrace" style="swimlane;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="-800" y="150" width="1720" height="970" as="geometry" />
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-56" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="Xw9Ffh_aE6y1-BGfohLy-11" source="Xw9Ffh_aE6y1-BGfohLy-54" target="Xw9Ffh_aE6y1-BGfohLy-23">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="360" y="824" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-52" value="N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="Xw9Ffh_aE6y1-BGfohLy-11" source="Xw9Ffh_aE6y1-BGfohLy-50" target="Xw9Ffh_aE6y1-BGfohLy-54">
+          <mxGeometry x="-1" y="10" relative="1" as="geometry">
+            <mxPoint x="460" y="799.37" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="470" y="509.37" />
+              <mxPoint x="470" y="824.37" />
+            </Array>
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-36" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="Xw9Ffh_aE6y1-BGfohLy-11" source="Xw9Ffh_aE6y1-BGfohLy-17" target="Xw9Ffh_aE6y1-BGfohLy-22">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-17" value="ray" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;" vertex="1" parent="Xw9Ffh_aE6y1-BGfohLy-11">
+          <mxGeometry x="300" y="50" width="120" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-25" value="Y" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="Xw9Ffh_aE6y1-BGfohLy-11" source="Xw9Ffh_aE6y1-BGfohLy-50" target="Xw9Ffh_aE6y1-BGfohLy-27">
+          <mxGeometry x="-0.6" y="-10" relative="1" as="geometry">
+            <mxPoint x="360" y="499.37" as="sourcePoint" />
+            <mxPoint x="370" y="559.37" as="targetPoint" />
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-53" value="交点信息、相交物体ID" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="Xw9Ffh_aE6y1-BGfohLy-25">
+          <mxGeometry x="-0.2021" y="-1" relative="1" as="geometry">
+            <mxPoint y="10" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-38" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0;exitDx=0;exitDy=0;entryX=0;entryY=0;entryDx=0;entryDy=0;endArrow=none;endFill=0;dashed=1;dashPattern=8 8;" edge="1" parent="Xw9Ffh_aE6y1-BGfohLy-11" source="Xw9Ffh_aE6y1-BGfohLy-22" target="Xw9Ffh_aE6y1-BGfohLy-37">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-39" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=1;entryDx=0;entryDy=0;endArrow=none;endFill=0;dashed=1;dashPattern=8 8;" edge="1" parent="Xw9Ffh_aE6y1-BGfohLy-11" source="Xw9Ffh_aE6y1-BGfohLy-22" target="Xw9Ffh_aE6y1-BGfohLy-37">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-51" value="求交结果" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="Xw9Ffh_aE6y1-BGfohLy-11" source="Xw9Ffh_aE6y1-BGfohLy-22" target="Xw9Ffh_aE6y1-BGfohLy-50">
+          <mxGeometry x="-0.6667" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-22" value="调用 &lt;b&gt;intersectRootBVH&lt;/b&gt;&lt;br&gt;对场景即一级 BVH 尝试求交" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="Xw9Ffh_aE6y1-BGfohLy-11">
+          <mxGeometry x="270" y="170" width="180" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-23" value="finalColor" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;" vertex="1" parent="Xw9Ffh_aE6y1-BGfohLy-11">
+          <mxGeometry x="300" y="900" width="120" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-29" value="tempColor、newRay" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="Xw9Ffh_aE6y1-BGfohLy-11" source="Xw9Ffh_aE6y1-BGfohLy-27" target="Xw9Ffh_aE6y1-BGfohLy-28">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-27" value="根据物体ID得到材质ID，通过查询 materialAttributesTexture得到材质信息，结合交点信息（位置、距离、法线），使用漫射、反射、折射等对应的方法求解新光线与累计颜色" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="Xw9Ffh_aE6y1-BGfohLy-11">
+          <mxGeometry x="270" y="589.37" width="180" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-30" value="finalColor" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="Xw9Ffh_aE6y1-BGfohLy-11" source="Xw9Ffh_aE6y1-BGfohLy-28" target="Xw9Ffh_aE6y1-BGfohLy-23">
+          <mxGeometry x="0.3333" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-34" value="Y" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="Xw9Ffh_aE6y1-BGfohLy-30">
+          <mxGeometry x="-0.7443" relative="1" as="geometry">
+            <mxPoint x="-10" y="-1" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-33" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="Xw9Ffh_aE6y1-BGfohLy-11" source="Xw9Ffh_aE6y1-BGfohLy-28" target="Xw9Ffh_aE6y1-BGfohLy-17">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="240" y="769" />
+              <mxPoint x="240" y="70" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-35" value="N" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="Xw9Ffh_aE6y1-BGfohLy-33">
+          <mxGeometry x="-0.9659" y="1" relative="1" as="geometry">
+            <mxPoint y="-11" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-44" value="newRay" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="Xw9Ffh_aE6y1-BGfohLy-33">
+          <mxGeometry x="-0.1519" y="-1" relative="1" as="geometry">
+            <mxPoint y="-29" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-28" value="到达指定迭代次数&lt;br&gt;或与光源相交" style="rhombus;whiteSpace=wrap;html=1;" vertex="1" parent="Xw9Ffh_aE6y1-BGfohLy-11">
+          <mxGeometry x="270" y="739.37" width="180" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-37" value="intersectRootBVH" style="swimlane;whiteSpace=wrap;html=1;" vertex="1" parent="Xw9Ffh_aE6y1-BGfohLy-11">
+          <mxGeometry x="520" y="50" width="320" height="900" as="geometry" />
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-59" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="Xw9Ffh_aE6y1-BGfohLy-37" source="Xw9Ffh_aE6y1-BGfohLy-42" target="Xw9Ffh_aE6y1-BGfohLy-63">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="120" y="120" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-42" value="ray" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;" vertex="1" parent="Xw9Ffh_aE6y1-BGfohLy-37">
+          <mxGeometry x="100" y="40" width="120" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-121" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="Xw9Ffh_aE6y1-BGfohLy-37" source="Xw9Ffh_aE6y1-BGfohLy-63" target="Xw9Ffh_aE6y1-BGfohLy-120">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-63" value="递归（GLSL中通过循环和栈展开）地与 BVH 中的包围盒进行相交测试" style="swimlane;whiteSpace=wrap;html=1;startSize=60;" vertex="1" parent="Xw9Ffh_aE6y1-BGfohLy-37">
+          <mxGeometry x="20" y="100" width="280" height="720" as="geometry" />
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-69" value="node &amp;lt;= rootBVH" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="Xw9Ffh_aE6y1-BGfohLy-63" source="Xw9Ffh_aE6y1-BGfohLy-64" target="Xw9Ffh_aE6y1-BGfohLy-65">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-64" value="ray，rootBVH" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;" vertex="1" parent="Xw9Ffh_aE6y1-BGfohLy-63">
+          <mxGeometry x="80" y="80" width="120" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-65" value="与 node 的包围盒求交&lt;br&gt;&lt;br&gt;若没交点则返回无交点&lt;br&gt;&lt;br&gt;有交点且不是叶子节点则递归求交子节点；&lt;br&gt;若为叶子节点，则通过 elementIDMap 获取所包含物体的ID列表，并调用 &lt;b&gt;intersectObjs&lt;/b&gt; 对所包含物体进行求交" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="Xw9Ffh_aE6y1-BGfohLy-63">
+          <mxGeometry x="20" y="160" width="240" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-84" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="Xw9Ffh_aE6y1-BGfohLy-63" source="Xw9Ffh_aE6y1-BGfohLy-80" target="Xw9Ffh_aE6y1-BGfohLy-83">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-80" value="intersectObjs" style="swimlane;whiteSpace=wrap;html=1;" vertex="1" parent="Xw9Ffh_aE6y1-BGfohLy-63">
+          <mxGeometry x="20" y="320" width="240" height="320" as="geometry" />
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-93" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="Xw9Ffh_aE6y1-BGfohLy-80" source="Xw9Ffh_aE6y1-BGfohLy-88" target="Xw9Ffh_aE6y1-BGfohLy-91">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-88" value="循环给定物体ID列表，通过 objAttributesTexture 查询物体信息，计算物体 Model 矩阵，得到 obj 结构体，并按物体类型调用对应的求交方法进行求交：&lt;br&gt;&lt;b&gt;intersectSphere&lt;/b&gt;（略）&lt;br&gt;&lt;b&gt;intersectPlane&lt;/b&gt;（略）&lt;br&gt;&lt;b&gt;intersectCube&lt;/b&gt;（略）&lt;br&gt;&lt;b&gt;intersectMesh&lt;/b&gt;（见右）" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="Xw9Ffh_aE6y1-BGfohLy-80">
+          <mxGeometry x="20" y="100" width="200" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-90" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="Xw9Ffh_aE6y1-BGfohLy-80" source="Xw9Ffh_aE6y1-BGfohLy-89" target="Xw9Ffh_aE6y1-BGfohLy-88">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-89" value="ray, objIDs List" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;" vertex="1" parent="Xw9Ffh_aE6y1-BGfohLy-80">
+          <mxGeometry x="60" y="40" width="120" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-91" value="求交结果" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;" vertex="1" parent="Xw9Ffh_aE6y1-BGfohLy-80">
+          <mxGeometry x="60" y="260" width="120" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-83" value="求交结果" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;" vertex="1" parent="Xw9Ffh_aE6y1-BGfohLy-63">
+          <mxGeometry x="80" y="660" width="120" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-120" value="求交结果" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;" vertex="1" parent="Xw9Ffh_aE6y1-BGfohLy-37">
+          <mxGeometry x="100" y="840" width="120" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-50" value="与场景有无交点" style="rhombus;whiteSpace=wrap;html=1;" vertex="1" parent="Xw9Ffh_aE6y1-BGfohLy-11">
+          <mxGeometry x="270" y="479.37" width="180" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-54" value="环境贴图求交" style="rounded=0;whiteSpace=wrap;html=1;horizontal=1;" vertex="1" parent="Xw9Ffh_aE6y1-BGfohLy-11">
+          <mxGeometry x="380" y="809.37" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-126" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=classic;startFill=1;dashed=1;" edge="1" parent="Xw9Ffh_aE6y1-BGfohLy-11" source="Xw9Ffh_aE6y1-BGfohLy-58" target="Xw9Ffh_aE6y1-BGfohLy-100">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1320" y="360" />
+              <mxPoint x="1320" y="360" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-58" value="&lt;b style=&quot;border-color: var(--border-color);&quot;&gt;bvhsAttributesTexture&lt;br style=&quot;border-color: var(--border-color);&quot;&gt;&lt;/b&gt;&lt;br style=&quot;border-color: var(--border-color);&quot;&gt;为二叉树的线性存储，两级 BVH 的数据均存储在这个材质中，即此材质存储了一个森林。&lt;br style=&quot;border-color: var(--border-color);&quot;&gt;&lt;br style=&quot;border-color: var(--border-color);&quot;&gt;对于给定节点，其中存储有此节点的 AABB 包围盒、左右儿子节点ID。若为叶子节点，则左右儿子节点均为-1，并存储其中元素的Map信息（所包含元素在ElementIDMap中的起止位置）" style="whiteSpace=wrap;html=1;" vertex="1" parent="Xw9Ffh_aE6y1-BGfohLy-11">
+          <mxGeometry x="860" y="230" width="200" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-73" value="&lt;b&gt;elementIDMapAttributesTexture&lt;br&gt;&lt;/b&gt;&lt;br&gt;在构建 BVH 树时，由于叶子节点可能含有多个元素（由表面积启发算法决定），于是将这些元素的 ID（即在用于构建 BVH 的数组中的索引）顺序存进 elementIDMap，并在节点中记录起止位置，就可以通过这个起止位置在这个存储池中找到一个区间，其中存储着这个叶子节点所存储元素的 ID 序列。" style="whiteSpace=wrap;html=1;" vertex="1" parent="Xw9Ffh_aE6y1-BGfohLy-11">
+          <mxGeometry x="860" y="450" width="200" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-74" value="&lt;b&gt;objAttributesTexture&lt;br&gt;&lt;/b&gt;&lt;br&gt;即用于构建第一级 BVH 树的物体数组。可用第一级 BVH 查询所得叶子节点的 elementIDMap 中存储的系列 ID 对这个数组进行索引。&lt;br&gt;&lt;br&gt;这个材质存储了 objID 为索引的所有物体的基本信息，包括物体类型、材质ID、 Model 信息（平移、缩放、旋转），以及若物体为 Mesh，其对应的 meshID，所有内容可对应构成 obj 结构体" style="whiteSpace=wrap;html=1;" vertex="1" parent="Xw9Ffh_aE6y1-BGfohLy-11">
+          <mxGeometry x="860" y="670" width="200" height="220" as="geometry" />
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-86" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=classic;startFill=1;dashed=1;" edge="1" parent="Xw9Ffh_aE6y1-BGfohLy-11" source="Xw9Ffh_aE6y1-BGfohLy-65" target="Xw9Ffh_aE6y1-BGfohLy-58">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="830" y="360" />
+              <mxPoint x="830" y="360" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-87" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=classic;startFill=1;dashed=1;" edge="1" parent="Xw9Ffh_aE6y1-BGfohLy-11" source="Xw9Ffh_aE6y1-BGfohLy-65" target="Xw9Ffh_aE6y1-BGfohLy-73">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="830" y="460" />
+              <mxPoint x="830" y="460" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-109" value="intersectMesh" style="swimlane;whiteSpace=wrap;html=1;" vertex="1" parent="Xw9Ffh_aE6y1-BGfohLy-11">
+          <mxGeometry x="1080" y="50" width="620" height="900" as="geometry" />
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-117" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="Xw9Ffh_aE6y1-BGfohLy-109" source="Xw9Ffh_aE6y1-BGfohLy-110" target="Xw9Ffh_aE6y1-BGfohLy-112">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-110" value="ray, obj" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;" vertex="1" parent="Xw9Ffh_aE6y1-BGfohLy-109">
+          <mxGeometry x="80" y="40" width="120" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-118" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" edge="1" parent="Xw9Ffh_aE6y1-BGfohLy-109" source="Xw9Ffh_aE6y1-BGfohLy-112" target="Xw9Ffh_aE6y1-BGfohLy-94">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="310" y="160" />
+              <mxPoint x="310" y="160" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-112" value="通过 obj.model 即物体矩阵将光线变换到物体坐标下进一步求交(其他类型物体同样)&lt;br&gt;&lt;br&gt;通过 obj.meshID 查询 meshBVH 和triangleAttributesBase，调用&lt;b&gt;intersectMeshBVH&lt;/b&gt; 进行求交" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="Xw9Ffh_aE6y1-BGfohLy-109">
+          <mxGeometry x="20" y="100" width="240" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-125" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="Xw9Ffh_aE6y1-BGfohLy-109" source="Xw9Ffh_aE6y1-BGfohLy-94" target="Xw9Ffh_aE6y1-BGfohLy-116">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="260" y="860" />
+              <mxPoint x="260" y="860" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-94" value="intersectMeshBVH" style="swimlane;whiteSpace=wrap;html=1;" vertex="1" parent="Xw9Ffh_aE6y1-BGfohLy-109">
+          <mxGeometry x="280" y="40" width="320" height="840" as="geometry" />
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-95" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="Xw9Ffh_aE6y1-BGfohLy-94" source="Xw9Ffh_aE6y1-BGfohLy-96" target="Xw9Ffh_aE6y1-BGfohLy-97">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="120" y="120" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-96" value="ray" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;" vertex="1" parent="Xw9Ffh_aE6y1-BGfohLy-94">
+          <mxGeometry x="100" y="40" width="120" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-124" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="Xw9Ffh_aE6y1-BGfohLy-94" source="Xw9Ffh_aE6y1-BGfohLy-97" target="Xw9Ffh_aE6y1-BGfohLy-123">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-97" value="递归（GLSL中通过循环和栈展开）地与 BVH 中的包围盒进行相交测试" style="swimlane;whiteSpace=wrap;html=1;startSize=60;" vertex="1" parent="Xw9Ffh_aE6y1-BGfohLy-94">
+          <mxGeometry x="20" y="100" width="280" height="660" as="geometry" />
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-98" value="node &amp;lt;= meshBVH" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="Xw9Ffh_aE6y1-BGfohLy-97" source="Xw9Ffh_aE6y1-BGfohLy-99" target="Xw9Ffh_aE6y1-BGfohLy-100">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-99" value="ray，meshBVH" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;" vertex="1" parent="Xw9Ffh_aE6y1-BGfohLy-97">
+          <mxGeometry x="80" y="80" width="120" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-100" value="与 node 的包围盒求交&lt;br&gt;&lt;br&gt;若没交点则返回无交点&lt;br&gt;&lt;br&gt;有交点且不是叶子节点则递归求交子节点；&lt;br&gt;若为叶子节点，则通过&lt;br&gt;triangleIDBase + elementIDMap &lt;br&gt;获取所包含三角形的ID列表，并调用 &lt;b&gt;intersectTriangles&lt;/b&gt; 对所包含物体进行求交" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="Xw9Ffh_aE6y1-BGfohLy-97">
+          <mxGeometry x="20" y="160" width="240" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-101" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="Xw9Ffh_aE6y1-BGfohLy-97" source="Xw9Ffh_aE6y1-BGfohLy-102" target="Xw9Ffh_aE6y1-BGfohLy-108">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-102" value="intersectTriangles" style="swimlane;whiteSpace=wrap;html=1;" vertex="1" parent="Xw9Ffh_aE6y1-BGfohLy-97">
+          <mxGeometry x="20" y="320" width="240" height="260" as="geometry" />
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-103" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="Xw9Ffh_aE6y1-BGfohLy-102" source="Xw9Ffh_aE6y1-BGfohLy-104" target="Xw9Ffh_aE6y1-BGfohLy-107">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-104" value="循环给定三角形ID列表，通过 triangleAttributesTexture 查询三角形信息，并使用 &lt;b&gt;intersectTriangle&lt;/b&gt;（略）进行求交" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="Xw9Ffh_aE6y1-BGfohLy-102">
+          <mxGeometry x="20" y="100" width="200" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-105" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="Xw9Ffh_aE6y1-BGfohLy-102" source="Xw9Ffh_aE6y1-BGfohLy-106" target="Xw9Ffh_aE6y1-BGfohLy-104">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-106" value="ray,&lt;br&gt;triangleIDs List" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;" vertex="1" parent="Xw9Ffh_aE6y1-BGfohLy-102">
+          <mxGeometry x="60" y="40" width="120" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-107" value="求交结果" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;" vertex="1" parent="Xw9Ffh_aE6y1-BGfohLy-102">
+          <mxGeometry x="60" y="200" width="120" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-108" value="求交结果" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;" vertex="1" parent="Xw9Ffh_aE6y1-BGfohLy-97">
+          <mxGeometry x="80" y="600" width="120" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-123" value="求交结果" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;" vertex="1" parent="Xw9Ffh_aE6y1-BGfohLy-94">
+          <mxGeometry x="100" y="780" width="120" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-116" value="求交结果" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;" vertex="1" parent="Xw9Ffh_aE6y1-BGfohLy-109">
+          <mxGeometry x="80" y="840" width="120" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-129" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=classic;startFill=1;dashed=1;" edge="1" parent="Xw9Ffh_aE6y1-BGfohLy-109" source="Xw9Ffh_aE6y1-BGfohLy-115" target="Xw9Ffh_aE6y1-BGfohLy-104">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-115" value="&lt;b&gt;triangleAttributesTexture&lt;br&gt;&lt;/b&gt;&lt;br&gt;即用于构建第二级 BVH 树的物体数组。可用第二级 BVH 查询所得叶子节点的 elementIDMap 中存储的系列 ID 对这个数组进行索引。&lt;br&gt;&lt;br&gt;存储以 triangleID 为索引的所有三角形的信息，包括三角形的三个顶点坐标和三个顶点的法线坐标" style="whiteSpace=wrap;html=1;" vertex="1" parent="Xw9Ffh_aE6y1-BGfohLy-109">
+          <mxGeometry x="40" y="520" width="200" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-114" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=classic;startFill=1;dashed=1;" edge="1" parent="Xw9Ffh_aE6y1-BGfohLy-11" source="Xw9Ffh_aE6y1-BGfohLy-88" target="Xw9Ffh_aE6y1-BGfohLy-74">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="820" y="690" />
+              <mxPoint x="820" y="690" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-75" value="&lt;b&gt;materialAttributesTexture&lt;br&gt;&lt;/b&gt;&lt;br&gt;存储材质信息，可以通过物体 ID 索引物体的材质ID，然后通过材质ID 在这里查询材质信息。" style="whiteSpace=wrap;html=1;" vertex="1" parent="Xw9Ffh_aE6y1-BGfohLy-11">
+          <mxGeometry x="20" y="569.37" width="200" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-85" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=classic;startFill=1;curved=0;dashed=1;" edge="1" parent="Xw9Ffh_aE6y1-BGfohLy-11" source="Xw9Ffh_aE6y1-BGfohLy-27" target="Xw9Ffh_aE6y1-BGfohLy-75">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="450" y="624.3699999999998" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="260" y="619.37" />
+              <mxPoint x="260" y="619.37" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-113" value="&lt;b&gt;meshAttributesTexture&lt;br&gt;&lt;/b&gt;&lt;br&gt;存储以 meshID 为索引的所有 mesh 的信息，包括两个域：&lt;br&gt;meshBVH&lt;br&gt;（即此 mesh 物体对应 BVH 的根节点ID）&lt;br&gt;triangleAttributesBase&lt;br&gt;（即此 mesh 物体对应的三角形序列在 triangleAttributesTexture中的起始位置）" style="whiteSpace=wrap;html=1;" vertex="1" parent="Xw9Ffh_aE6y1-BGfohLy-11">
+          <mxGeometry x="860" y="50" width="200" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-127" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=classic;startFill=1;dashed=1;" edge="1" parent="Xw9Ffh_aE6y1-BGfohLy-11" source="Xw9Ffh_aE6y1-BGfohLy-100" target="Xw9Ffh_aE6y1-BGfohLy-73">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1140" y="460" />
+              <mxPoint x="1140" y="460" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-128" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=classic;startFill=1;dashed=1;" edge="1" parent="Xw9Ffh_aE6y1-BGfohLy-11" source="Xw9Ffh_aE6y1-BGfohLy-112" target="Xw9Ffh_aE6y1-BGfohLy-113">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1090" y="170" />
+              <mxPoint x="1090" y="170" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-19" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="Xw9Ffh_aE6y1-BGfohLy-18" target="Xw9Ffh_aE6y1-BGfohLy-4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-18" value="像素位置" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;" vertex="1" parent="1">
+          <mxGeometry x="-300" y="40" width="120" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="Xw9Ffh_aE6y1-BGfohLy-20" value="结果" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;" vertex="1" parent="1">
+          <mxGeometry x="320" y="40" width="100" height="40" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

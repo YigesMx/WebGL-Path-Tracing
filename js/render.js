@@ -129,7 +129,7 @@ export class Renderer{
 		this.target_message = document.getElementById(messageID);
 		this.initGL(this.target_canvas, this.target_message);
 		// gui
-		this.viewGUI = new GUI({title: 'View', container: document.getElementById('flex-container')});
+		this.viewGUI = new GUI({title: 'Settings', container: document.getElementById('flex-container')});
 		this.viewGUI.domElement.style.maxHeight = '90%';
 		this.viewGUI.add({enable: false}, 'enable').name('Enable SSAA').onChange((value) => {
 			this.enableSSAA = value ? 1 : 0;
@@ -139,6 +139,10 @@ export class Renderer{
 			this.SSAA_Scale = value;
 			this.resetIterations();
 		});
+		this.viewGUI.add({enableEnvTexture: true}, 'enableEnvTexture').name('Enable Env Texture').onChange((value) => {
+			this.enableEnvTexture = value ? 1 : 0;
+			this.resetIterations();
+		});
 		this.viewGUI.add({resolution: [512,512]}, 'resolution', [[256,256], [512,512], [720, 720]]).name('Resolution').onChange((value) => {
 			this.target_canvas.width = value[0];
 			this.target_canvas.height = value[1];
@@ -146,10 +150,6 @@ export class Renderer{
 		});
 		this.viewGUI.add({fov: 45}, 'fov').min(15).max(165).name('FOV').onChange((value) => {
 			this.viewConfig.viewFOVY = value/180*Math.PI;
-			this.resetIterations();
-		});
-		this.viewGUI.add({enableEnvTexture: true}, 'enableEnvTexture').name('Enable Env Texture').onChange((value) => {
-			this.enableEnvTexture = value ? 1 : 0;
 			this.resetIterations();
 		});
 		this.viewGUI.add({maxBounces : 8}, 'maxBounces').min(1).max(12).step(1).name('Max Bounces').onChange((value) => {
