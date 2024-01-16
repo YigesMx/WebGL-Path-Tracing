@@ -14,7 +14,8 @@ precision highp float;
 struct Ray {
     vec3 origin;
     vec3 direction;
-    float IOR; // index of refraction 即折射率
+    float curIOR; // 当前 IOR
+    float accIOR; // 累计 IOR
 };
 
 struct Object {
@@ -26,6 +27,18 @@ struct Object {
 
     int meshID;
 
+    vec3 color;
+
+    int reflective;
+    float reflectivity;
+    int refractive;
+    float IOR; // indexOfRefraction
+
+    float emittance;
+    int subsurfaceScatter;
+};
+
+struct Material {
     vec3 color;
 
     int reflective;
@@ -234,38 +247,38 @@ float blinnPhongSpecular(in vec3 normalVec, in vec3 lightVec, in float specPower
 }
 
 
-vec3 subScatterFS(in Intersection intersect, in Object obj, in float seed) { // TODO: 目前这个是写死的模拟次表面散射，考虑能否改为通过 pt和材质动态 计算的。
-
-    float RimScalar = 1.0;
-    float MaterialThickness = 0.5;
-    vec3 ExtinctionCoefficient = vec3(1.0,1.0,1.0);
-    vec3 SpecColor = vec3(1.0,1.0,1.0);
-    vec3 lightPoint = vec3(-3.5, 4.0, 5.0);
-
-    float attenuation = 10.0 * (1.0 / distance(lightPoint,intersect.intersectPos));
-    vec3 eVec = normalize(intersect.intersectPos);
-    vec3 lVec = normalize(lightPoint - intersect.intersectPos);
-    vec3 wNorm = normalize(intersect.intersectNormal);
-
-    vec3 dotLN = vec3(halfLambert(lVec,wNorm) * attenuation);
-    dotLN *= obj.color;
-
-    vec3 indirectLightComponent = vec3(MaterialThickness * max(0.0,dot(-wNorm,lVec)));
-    indirectLightComponent += MaterialThickness * halfLambert(-eVec,lVec);
-    indirectLightComponent *= attenuation;
-    indirectLightComponent.r *= ExtinctionCoefficient.r;
-    indirectLightComponent.g *= ExtinctionCoefficient.g;
-    indirectLightComponent.b *= ExtinctionCoefficient.b;
-
-    vec3 rim = vec3(1.0 - max(0.0,dot(wNorm,eVec)));
-    rim *= rim;
-    rim *= max(0.0,dot(wNorm,lVec)) * SpecColor.rgb;
-
-    vec4 finalCol = vec4(dotLN,1.0) + vec4(indirectLightComponent,1.0);
-    finalCol.rgb += (rim * RimScalar * attenuation * finalCol.a);
-    float SpecularPower = 15.0;
-    finalCol.rgb += vec3(blinnPhongSpecular(wNorm,lVec,SpecularPower) * attenuation * SpecColor * finalCol.a * 0.1);
-    finalCol.rgb *= vec3(1.0);
-
-    return finalCol.rgb;
-}
+//vec3 subScatterFS(in Intersection intersect, in Material material, in float seed) { // TODO: 目前这个是写死的模拟次表面散射，未来考虑改更正为基于物理动态计算的。
+//
+//    float RimScalar = 1.0;
+//    float MaterialThickness = 0.5;
+//    vec3 ExtinctionCoefficient = vec3(1.0,1.0,1.0);
+//    vec3 SpecColor = vec3(1.0,1.0,1.0);
+//    vec3 lightPoint = vec3(-3.5, 4.0, 5.0);
+//
+//    float attenuation = 10.0 * (1.0 / distance(lightPoint,intersect.intersectPos));
+//    vec3 eVec = normalize(intersect.intersectPos);
+//    vec3 lVec = normalize(lightPoint - intersect.intersectPos);
+//    vec3 wNorm = normalize(intersect.intersectNormal);
+//
+//    vec3 dotLN = vec3(halfLambert(lVec,wNorm) * attenuation);
+//    dotLN *= material.color;
+//
+//    vec3 indirectLightComponent = vec3(MaterialThickness * max(0.0,dot(-wNorm,lVec)));
+//    indirectLightComponent += MaterialThickness * halfLambert(-eVec,lVec);
+//    indirectLightComponent *= attenuation;
+//    indirectLightComponent.r *= ExtinctionCoefficient.r;
+//    indirectLightComponent.g *= ExtinctionCoefficient.g;
+//    indirectLightComponent.b *= ExtinctionCoefficient.b;
+//
+//    vec3 rim = vec3(1.0 - max(0.0,dot(wNorm,eVec)));
+//    rim *= rim;
+//    rim *= max(0.0,dot(wNorm,lVec)) * SpecColor.rgb;
+//
+//    vec4 finalCol = vec4(dotLN,1.0) + vec4(indirectLightComponent,1.0);
+//    finalCol.rgb += (rim * RimScalar * attenuation * finalCol.a);
+//    float SpecularPower = 15.0;
+//    finalCol.rgb += vec3(blinnPhongSpecular(wNorm,lVec,SpecularPower) * attenuation * SpecColor * finalCol.a * 0.1);
+//    finalCol.rgb *= vec3(1.0);
+//
+//    return finalCol.rgb;
+//}

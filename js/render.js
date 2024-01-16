@@ -144,7 +144,7 @@ export class Renderer{
 			this.target_canvas.height = value[1];
 			this.resize();
 		});
-		this.viewGUI.add({fov: 60}, 'fov').min(15).max(165).name('FOV').onChange((value) => {
+		this.viewGUI.add({fov: 45}, 'fov').min(15).max(165).name('FOV').onChange((value) => {
 			this.viewConfig.viewFOVY = value/180*Math.PI;
 			this.resetIterations();
 		});
@@ -185,7 +185,7 @@ export class Renderer{
 			Math.PI /6, 0.0, 13.5,
 			vec3.create(),
 			vec3.fromValues(0.0, 1.0, 0.0),
-			Math.PI /3
+			Math.PI /4
 		);
 		// init default scene
 		initDefaultScene(this.scene);
@@ -698,7 +698,7 @@ class Interactions{
 
 	bind_interactions(canvas){
 		canvas.onmousedown = this.handleMouseDown.bind(this);
-		canvas.oncontextmenu = function (ev) { return false; };
+		canvas.oncontextmenu = function (event) { return false; };
 		document.onmouseup = this.handleMouseUp.bind(this);
 		document.onmousemove = this.handleMouseMove.bind(this);
 		document.onkeydown = this.handleKeyDown.bind(this);

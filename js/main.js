@@ -67,7 +67,6 @@ async function main() {
 			false,
 			1.0,
 			10.0,
-			false
 		));
 
 		scene.addMaterial(new Material(
@@ -78,7 +77,6 @@ async function main() {
 			false,
 			1.0,
 			0.0,
-			false
 		));
 
 		scene.addMaterial(new Material(
@@ -89,7 +87,6 @@ async function main() {
 			false,
 			1.0,
 			0.0,
-			false
 		));
 
 		scene.addMaterial(new Material(
@@ -100,7 +97,6 @@ async function main() {
 			false,
 			1.0,
 			0.0,
-			false
 		));
 
 		scene.addMaterial(new Material(
@@ -111,7 +107,6 @@ async function main() {
 			false,
 			1.0,
 			0.0,
-			false
 		));
 
 		scene.addMaterial(new Material(
@@ -122,7 +117,6 @@ async function main() {
 			false,
 			1.0,
 			0.0,
-			false
 		));
 
 		scene.addMaterial(new Material(
@@ -133,7 +127,6 @@ async function main() {
 			false,
 			1.0,
 			0.0,
-			false
 		));
 
 		scene.addMaterial(new Material(
@@ -144,7 +137,6 @@ async function main() {
 			false,
 			1.0,
 			0.0,
-			false
 		));
 
 		scene.addMaterial(new Material(
@@ -155,7 +147,6 @@ async function main() {
 			true,
 			1.7,
 			0.0,
-			true
 		));
 
 		scene.addMaterial(new Material(
@@ -166,7 +157,16 @@ async function main() {
 			true,
 			1.7,
 			0.0,
-			true
+		))
+
+		scene.addMaterial(new Material(
+			'air',
+			[1.0, 1.0, 1.0],
+			true,
+			1.0,
+			true,
+			1.0,
+			0.0,
 		))
 
 		// ===== objs =====
@@ -292,6 +292,27 @@ async function main() {
 			8,
 			1,
 			scene.meshModelsManager.getMeshAABB(1)
+		));
+
+		// hollow sphere
+		scene.addObj(new Obj(
+			'hollow sphere - outer',
+			'sphere',
+			[0.0, 3.5, -2.5],
+			[1.5, 1.5, 1.5],
+			[0.0, 0.0, 0.0],
+			8,
+			0
+		));
+
+		scene.addObj(new Obj(
+			'hollow sphere - inner',
+			'sphere',
+			[0.0, 3.5, -2.5],
+			[1.4, 1.4, 1.4],
+			[0.0, 0.0, 0.0],
+			10,
+			0
 		));
 
 		scene.onChange(true);

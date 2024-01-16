@@ -548,7 +548,7 @@ int getRefractive(int materialID){
 
 float getIOR(int materialID){
 	vec2 coord = getMaterialAttributeTextureCoord(materialID*materialSectionsPerMaterial+1);
-	return max(texture(materialAttributesTexture, vec2(coord.x/materialAttributesWidth,coord.y/materialAttributesHeight)).w, 1.0);
+	return texture(materialAttributesTexture, vec2(coord.x/materialAttributesWidth,coord.y/materialAttributesHeight)).w;
 }
 
 float getEmittance(int materialID){
@@ -561,69 +561,62 @@ int getSubsurfaceScatter(int materialID){
 	return int(texture(materialAttributesTexture, vec2(coord.x/materialAttributesWidth,coord.y/materialAttributesHeight)).y);
 }
 
-bool intersectObjs(const int elementStart, const int elementEnd, in Ray ray, inout Intersection finalIntersect, inout Object finalIntersectObj) {
+bool intersectObjs(const int elementStart, const int elementEnd, in Ray ray, inout Intersection finalIntersect, inout int finalIntersectObjID) {
 
 	finalIntersect.intersectDistance = INF_F - 0.01;
 
 	for(int element = elementStart; element < elementEnd; element++){
-
+		// intersect flag
 		bool intersected = false;
 
+		// temp intersect
 		Intersection tempIntersect;
 		tempIntersect.intersectDistance = INF_F;
 
-		Object tempObj;
+		// temp intersect obj id
+		int tempIntersectObjID = getElementID(element);
 
-		int objID = getElementID(element);
+		// temp intersect obj
+		Object tempIntersectObj;
 
-		tempObj.objType = getObjType(objID);
+		tempIntersectObj.objType = getObjType(tempIntersectObjID);
 
 		mat4 modelMat = mat4(1.0);
-		translate(modelMat, getPos(objID));
-		vec3 rotv = getRotation(objID);
+		translate(modelMat, getPos(tempIntersectObjID));
+		vec3 rotv = getRotation(tempIntersectObjID);
 		rotateX(modelMat,PI / 180.0 * rotv.x);
 		rotateY(modelMat,PI / 180.0 * rotv.y);
 		rotateZ(modelMat,PI / 180.0 * rotv.z);
-		scale(modelMat, getScale(objID));
+		scale(modelMat, getScale(tempIntersectObjID));
 
-		tempObj.model = modelMat;
-		tempObj.invModel = inversemat(tempObj.model);
-		tempObj.transInvModel = transposeMat(tempObj.invModel);
+		tempIntersectObj.model = modelMat;
+		tempIntersectObj.invModel = inversemat(tempIntersectObj.model);
+		tempIntersectObj.transInvModel = transposeMat(tempIntersectObj.invModel);
 
-		if(tempObj.objType == 0){
+		// intersect obj
+		if(tempIntersectObj.objType == 0){
 
-			intersected = intersectSphere(tempObj, ray, tempIntersect);
+			intersected = intersectSphere(tempIntersectObj, ray, tempIntersect);
 
-		} else if(tempObj.objType == 1) {
+		} else if(tempIntersectObj.objType == 1) {
 
-			intersected = intersectPlane(tempObj, ray, tempIntersect);
+			intersected = intersectPlane(tempIntersectObj, ray, tempIntersect);
 
-		} else if(tempObj.objType == 2) {
+		} else if(tempIntersectObj.objType == 2) {
 
-			intersected = intersectCube(tempObj, ray, tempIntersect);
+			intersected = intersectCube(tempIntersectObj, ray, tempIntersect);
 
-		} else if(tempObj.objType == 3) {
+		} else if(tempIntersectObj.objType == 3) {
 
-			tempObj.meshID = getMeshID(objID);
-			intersected = intersectMesh(tempObj, ray, tempIntersect);
+			tempIntersectObj.meshID = getMeshID(tempIntersectObjID);
+			intersected = intersectMesh(tempIntersectObj, ray, tempIntersect);
 
 		}
 
+		// update intersect result
 		if(intersected && (tempIntersect.intersectDistance > 0.0) && (tempIntersect.intersectDistance < finalIntersect.intersectDistance)){
-			int materialID = getMaterialID(objID);
-
-			tempObj.color = getColor(materialID);
-
-			tempObj.reflective = getReflective(materialID);
-			tempObj.reflectivity = getReflectivity(materialID);
-			tempObj.refractive = getRefractive(materialID);
-			tempObj.IOR = getIOR(materialID);
-
-			tempObj.emittance = getEmittance(materialID);
-			tempObj.subsurfaceScatter = getSubsurfaceScatter(materialID);
-
 			finalIntersect = tempIntersect;
-			finalIntersectObj = tempObj;
+			finalIntersectObjID = tempIntersectObjID;
 		}
 	}
 
@@ -634,7 +627,7 @@ bool intersectObjs(const int elementStart, const int elementEnd, in Ray ray, ino
 	}
 }
 
-bool intersectRootBVH(in int rootBVHNodeID, in Ray ray, inout Intersection finalIntersect, inout Object finalIntersectObj){
+bool intersectRootBVH(in int rootBVHNodeID, in Ray ray, inout Intersection finalIntersect, inout int finalIntersectObjID){
 
 	float tmin, tmax;
 	int stack[64];
@@ -663,13 +656,13 @@ bool intersectRootBVH(in int rootBVHNodeID, in Ray ray, inout Intersection final
 				Intersection tempIntersect;
 				tempIntersect.intersectDistance = INF_F;
 
-				Object obj;
-				bool intersected = intersectObjs(start, end, ray, tempIntersect, obj);
+				int tempIntersectObjID;
+				bool intersected = intersectObjs(start, end, ray, tempIntersect, tempIntersectObjID);
 
 				if(intersected && (tempIntersect.intersectDistance > 0.0) && (tempIntersect.intersectDistance < closestIntersectionDistance)){
 					closestIntersectionDistance = tempIntersect.intersectDistance;
 					finalIntersect = tempIntersect;
-					finalIntersectObj = obj;
+					finalIntersectObjID = tempIntersectObjID;
 				}
 
 			} else {
@@ -694,7 +687,7 @@ bool intersectRootBVH(in int rootBVHNodeID, in Ray ray, inout Intersection final
 }
 
 const float shift = 0.01;
-vec3 pathTrace(in Ray currentRay, inout vec3 finalColor){
+vec3 pathTrace(in Ray curRay, inout vec3 finalColor){
 
 	vec3 tempColor = vec3(1.0, 1.0, 1.0);
 
@@ -702,27 +695,39 @@ vec3 pathTrace(in Ray currentRay, inout vec3 finalColor){
 
 		Intersection intersect;
 		intersect.intersectDistance = INF_F;
+		int intersectObjID;
 
-		Object obj;
 		float seed = time + float(i)/100.0; // random seed
 
-		if (intersectRootBVH(rootBVH, currentRay, intersect, obj)) { // 通过 BVH 求出相交物体并得到相交信息
+		if (intersectRootBVH(rootBVH, curRay, intersect, intersectObjID)) { // 通过 BVH 求出相交物体并得到相交信息
+			// 有相交，获取本次相交的材质信息
+			int materialID = getMaterialID(intersectObjID);
+			Material material;
+
+			material.color = getColor(materialID);
+
+			material.reflective = getReflective(materialID);
+			material.reflectivity = getReflectivity(materialID);
+			material.refractive = getRefractive(materialID);
+			material.IOR = getIOR(materialID);
+
+			material.emittance = getEmittance(materialID);
+//			material.subsurfaceScatter = getSubsurfaceScatter(materialID); // TODO: 未来可以考虑实现次表面散射
 
 			// 接下来，计算下一次迭代射线以及当前射线累积颜色
 
 			// 光源物体 TODO: 未来可以考虑实现单独的光源类，以实现平行光、隐藏光源等功能
-			if(obj.emittance > 0.0){
-				finalColor = tempColor * obj.color * obj.emittance;
+			if(material.emittance > 0.0){
+				finalColor = tempColor * material.color * material.emittance;
 				return finalColor;
 			}
 
-			Ray newRay = currentRay;
+			Ray newRay = curRay;
 
 			// 非光源物体 分材质讨论
-			if (obj.refractive == 0 && obj.reflective == 0){ // 仅漫反射
+			if (material.refractive == 0 && material.reflective == 0){ // 仅漫反射
 
-				tempColor *= obj.color;
-//				finalColor = tempColor;
+				tempColor *= material.color;
 
 				newRay.direction = normalize(calculateRandomDirectionInHemisphere(intersect.intersectNormal, initRayDirection, seed + randOnVec2(intersect.intersectPos.xy)));
 				newRay.origin = intersect.intersectPos + shift * newRay.direction;
@@ -730,95 +735,84 @@ vec3 pathTrace(in Ray currentRay, inout vec3 finalColor){
 			} else { // 有反射或折射
 
 				vec3 noiseVec3 = vec3(randOnVec2(intersect.intersectPos.yz),randOnVec2(intersect.intersectNormal.xz),randOnVec2(intersect.intersectNormal.xy));
-				float randomNum = randOnVec3WithNoiseAndSeed(currentRay.direction, noiseVec3, seed+0.5);
+				float randomNum = randOnVec3WithNoiseAndSeed(curRay.direction, noiseVec3, seed+0.5);
 
-				if(obj.refractive > 0) { // 折射，且有折射必有反射，通过 Fresnel 公式计算反射比例
+				if(material.refractive > 0) { // 折射，且有折射必有反射，通过 Fresnel 公式计算反射比例
 
 					// 判断入射光线是否从物体内部射出
 					bool isInsideOut = intersect.isInsideOut;
 
-					float curIOR = currentRay.IOR;
-					float objIOR = obj.IOR;
+					float curIOR = curRay.curIOR;
+					float objIOR = material.IOR;
 
-					float IORratio;
-					if(isInsideOut){
-						IORratio = objIOR/1.0;
-					}else{
-						IORratio = 1.0/objIOR;
-					}
-
-					Fresnel fresnel = calculateFresnel(intersect.intersectNormal, currentRay.direction, curIOR, objIOR);
+					Fresnel fresnel = calculateFresnel(intersect.intersectNormal, curRay.direction, curIOR, objIOR);
 
 					vec3 noiseVec3 = vec3(randOnVec2(intersect.intersectPos.xy),randOnVec2(intersect.intersectPos.xz),randOnVec2(intersect.intersectPos.yz));
 					float randomnum = randOnVec3WithNoiseAndSeed(initRayDirection, noiseVec3, seed);
 
 					if(randomnum < fresnel.reflectionCoefficient){ // 小于反射比例，反射
 
-						vec3 reflectDirection = reflect(currentRay.direction, intersect.intersectNormal);
+						vec3 reflectDirection = reflect(curRay.direction, intersect.intersectNormal);
 						newRay.direction = reflectDirection;
 
-						if(obj.reflectivity < 1.0){ // 若有漫反射，则根据 reflectivity(=1-Roughness)加入随机扰动
-							newRay.direction = reflectDiffuseRandom(newRay.direction, obj.reflectivity, initRayDirection, seed + randOnVec2(intersect.intersectPos.yz));
+						if(material.reflectivity < 1.0){ // 若有漫反射，则根据 reflectivity(=1-Roughness)加入随机扰动
+							newRay.direction = reflectDiffuseRandom(newRay.direction, material.reflectivity, initRayDirection, seed + randOnVec2(intersect.intersectPos.yz));
 						}
 
 						newRay.origin = intersect.intersectPos + shift * newRay.direction;
 
-//						if(obj.subsurfaceScatter > 0){ // 若有次表面散射，则加入次表面散射，目前是写死的模拟默认场景中的光源，物体透光度等都是写死的
+//						if(material.subsurfaceScatter > 0){
 //							float random = randOnVec2(intersect.intersectPos.xy);
-//							tempColor *= subScatterFS(intersect, obj, random);
-//							finalColor = tempColor;
+//							tempColor *= subScatterFS(intersect, material, random);
 //						}
 
 					} else { // 折射
-						vec3 refractDirection = refract(currentRay.direction, intersect.intersectNormal, IORratio);
+
+						if(isInsideOut){ //out object
+							newRay.accIOR = curRay.accIOR / objIOR;
+							newRay.curIOR = newRay.accIOR;
+						} else { //into object
+							newRay.accIOR = curRay.accIOR * objIOR;
+							newRay.curIOR = objIOR;
+						}
+						float IORratio = curRay.curIOR / newRay.curIOR;
+
+						vec3 refractDirection = refract(curRay.direction, intersect.intersectNormal, IORratio);
 						newRay.direction = refractDirection;
 
-						if(obj.reflectivity < 1.0){ // 若有漫反射，则根据 reflectivity(=1-Roughness)加入随机扰动
-							newRay.direction = reflectDiffuseRandom(newRay.direction, obj.reflectivity, initRayDirection, seed + randOnVec2(intersect.intersectPos.yz));
+						if(material.reflectivity < 1.0){ // 若有漫反射，则根据 reflectivity(=1-Roughness)加入随机扰动
+							newRay.direction = reflectDiffuseRandom(newRay.direction, material.reflectivity, initRayDirection, seed + randOnVec2(intersect.intersectPos.yz));
 						}
 
 						newRay.origin = intersect.intersectPos + shift * newRay.direction;
 
-//						if(isInsideOut){ //out object
-//							newRay.IOR /= objIOR;
-//						} else { //into object
-//							newRay.IOR *= objIOR;
-//						}
-
-						if(isInsideOut){ //out object
-							newRay.IOR = 1.0;
-						} else { //into object
-							newRay.IOR = objIOR;
-						}
 					}
 
-					tempColor *= obj.color; // TODO: 加入 metallic 控制玻璃自身颜色加入比例
-//					finalColor = tempColor;
+					tempColor *= material.color;
 
-				} else if(obj.reflective > 0) { // 仅反射
+				} else if(material.reflective > 0) { // 仅反射
 
-					if(obj.subsurfaceScatter > 0){
-						float random = randOnVec2(intersect.intersectPos.xy);
-						tempColor *= subScatterFS(intersect, obj, random);
-					}
-					tempColor *= obj.color; // TODO: 加入 metallic 控制金属自身颜色加入比例
-//					finalColor = tempColor;
+//					if(material.subsurfaceScatter > 0){
+//						float random = randOnVec2(intersect.intersectPos.xy);
+//						tempColor *= subScatterFS(intersect, material, random);
+//					}
+					tempColor *= material.color;
 
-					newRay.direction = reflect(currentRay.direction, intersect.intersectNormal);
-					if(obj.reflectivity < 1.0){
-						newRay.direction = reflectDiffuseRandom(newRay.direction, obj.reflectivity, initRayDirection, seed + randOnVec2(intersect.intersectPos.yz));
+					newRay.direction = reflect(curRay.direction, intersect.intersectNormal);
+					if(material.reflectivity < 1.0){
+						newRay.direction = reflectDiffuseRandom(newRay.direction, material.reflectivity, initRayDirection, seed + randOnVec2(intersect.intersectPos.yz));
 					}
 					newRay.origin = intersect.intersectPos + shift * newRay.direction;
 				}
 
 			}
 
-			currentRay = newRay;
+			curRay = newRay;
 
 		} else { // 无交点 - 环境光
 			vec3 envColor;
 			if(enableEnvTexture > 0){
-				envColor = texture(envTexture, vec2(0.5 + atan(currentRay.direction.z, currentRay.direction.x) / (2.0 * PI), 0.5 - asin(currentRay.direction.y) / PI)).rgb;
+				envColor = texture(envTexture, vec2(0.5 + atan(curRay.direction.z, curRay.direction.x) / (2.0 * PI), 0.5 - asin(curRay.direction.y) / PI)).rgb;
 			}else{
 				envColor = vec3(0.0, 0.0, 0.0);
 			}
@@ -837,7 +831,8 @@ void main(void){
 	Ray ray;
 	ray.origin = cameraPos.xyz;
 	ray.direction = normalize( initRayDirection );
-	ray.IOR = 1.0;
+	ray.curIOR = 1.0;
+	ray.accIOR = 1.0;
 
 	vec3 finalColor = vec3(0.0);
 

@@ -149,7 +149,7 @@ export class BVHs {
         return aabb;
     }
 
-    timeTri= 1.0;
+    timeTri= 2.0;
     timeAABB = 1.0;
 
     _newNode(){
