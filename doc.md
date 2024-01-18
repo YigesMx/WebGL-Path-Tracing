@@ -120,11 +120,14 @@
 ![光线与物体相交](./assets/rt.png)
 
 类似下面的计算可以推广到更多的物体上
+
 **球面可以有：**
+
 $$(o+td-c)^2=r^2$$
 $$t=\frac{-(o-c)\cdot d\pm\sqrt{(o-c)\cdot d)^2-(o-c)^2+r^2}}{d\cdot d}$$
 
 **平面可以有：**
+
 $$n\cdot (o+td-p)=0$$
 $$t=\frac{n\cdot(p-o)}{n\cdot d}$$
 
@@ -135,6 +138,7 @@ $$t=\frac{n\cdot(p-o)}{n\cdot d}$$
 R为反射光线，I为入射光线，N为法线
 
 **3.1 漫反射**
+
 漫反射材料的反射方向是随机的，我们可以通过随机生成一个半球内的方向向量来模拟漫反射材料的反射方向。
 ![diffuse](./assets/diffuse.png)
 
@@ -146,11 +150,13 @@ $$V_{out}=V-2(V\cdot n)n$$
 ![specular](./assets/specular.png)
 
 **3.3 模糊反射**
+
 我们还可以通过使用一个小球体并为射线选择一个新的端点来随机化反射方向。我们将使用以原始端点为中心的球体表面的随机点，按模糊因子缩放。如下图所示。
 
 ![fuzzy](./assets/fuzzy.png)
 
 **3.4 折射**
+
 折射的计算公式如下：
 $$\eta_{to}*sin(\theta_{to})=\eta_{from}*sin(\theta_{from})$$
 

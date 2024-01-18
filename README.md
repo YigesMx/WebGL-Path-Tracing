@@ -1,6 +1,8 @@
 # Path Tracing
 
-该项目参考了 [项目](https://github.com/wulinjiansheng/WebGL_PathTracer/tree/master) ，并对代码进行了完全重写和重构，在此基础上加入了更复杂的功能。
+项目仓库地址：[项目](https://github.com/YigesMx/WebGL-Path-Tracing/)
+
+该项目参考了 [项目](https://github.com/wulinjiansheng/WebGL_PathTracer/) ，并对代码进行了完全重写和重构，在此基础上加入了更复杂的功能。
 
 其中原项目实现了：
 
@@ -45,6 +47,14 @@
 - 问题：当前项目仅在 MacBook Pro 14' M2 Pro 上测试过，Chromium 内核浏览器和 Safari 均可正常运行，其他设备上可能存在兼容性问题。
   - （已知 Windows Chromium 无法正常执行二级 BVH 部分，会导致浏览器崩溃，若将 Shader 中判断 tempObj.objType == 3 部分删除，即放弃掉三角面物体的渲染可正常运行，目前不清楚原因所在，欢迎感兴趣的朋友pr）
 - 待改进：对次表面反射的物理实现。
+
+## 项目文档
+
+见 `doc.md`
+
+## 项目分工
+
+见 `分工.md`
 
 ## 运行
 
